@@ -19,8 +19,9 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
+        'nisn',
         'password',
+        'role',
     ];
 
     /**
@@ -41,8 +42,23 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get loans as peminjam
+     */
+    public function loans()
+    {
+        return $this->hasMany(Loan::class, 'user_id');
+    }
+
+    /**
+     * Get loans verified as petugas
+     */
+    public function verifiedLoans()
+    {
+        return $this->hasMany(Loan::class, 'petugas_id');
     }
 }
