@@ -22,12 +22,17 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'nisn' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        $credentials = [
+            'nisn' => $request->nisn,
+            'password' => $request->password,
+        ];
+
+        if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
             $user = Auth::user();
 
@@ -37,6 +42,48 @@ class AuthController extends Controller
         return back()->withErrors([
             'nisn' => 'NISN atau password salah.',
         ])->onlyInput('nisn');
+    }
+
+    /**
+     * Show register form
+     */
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    /**
+     * Handle register
+     */
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'nisn' => 'required|string|size:10|unique:users,nisn',
+            'password' => 'required|string|min:6|confirmed',
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'nisn.required' => 'NISN wajib diisi.',
+            'nisn.size' => 'NISN harus 10 digit.',
+            'nisn.unique' => 'NISN sudah terdaftar.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 6 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        // Create user with role peminjam (siswa)
+        $user = User::create([
+            'name' => $validated['name'],
+            'nisn' => $validated['nisn'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'peminjam',
+        ]);
+
+        // Auto login after register
+        Auth::login($user);
+
+        return redirect()->route('peminjam.dashboard')
+            ->with('success', 'Registrasi berhasil! Selamat datang di Perpustakaan SMPN 1 Balen.');
     }
 
     /**
