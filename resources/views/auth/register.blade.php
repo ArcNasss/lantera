@@ -118,14 +118,13 @@
         </div>
 
         <!-- Right Side - Welcome Section -->
-        <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-cyan-400 to-cyan-500 items-center justify-center p-12">
+        <div class="hidden lg:flex lg:w-1/2 bg-linear-to-br from-cyan-500 to-cyan-800 items-center justify-center p-12">
             <div class="max-w-lg text-white">
-                <h2 class="text-5xl font-bold mb-4">Selamat datang di Lantera</h2>
-                <p class="text-xl text-cyan-50 mb-8">
-                    Solusi pintar untuk sistem  dan administrasi Perpustakaan.
+                <h2 class="text-4xl font-bold mb-4">Selamat datang di Lantera</h2>
+                <p class="text-lg text-cyan-50 mb-8">
+                    Solusi pintar untuk komunikasi dan administrasi Perpustakaan.
                 </p>
-
-
+                <img src="{{ asset('image/authImage.png')}}" alt="" class="w-sm m-auto">
             </div>
         </div>
     </div>

@@ -12,19 +12,33 @@ class BookItemController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'book_id' => 'required|exists:books,id',
-            'kode_buku' => 'required|string|unique:book_items,kode_buku|max:50',
-        ]);
+        try {
+            $validated = $request->validate([
+                'book_id' => 'required|exists:books,id',
+                'kode_buku' => 'required|string|unique:book_items,kode_buku|max:50',
+            ]);
 
-        $validated['status'] = 'available';
+            $validated['status'] = 'available';
 
-        BookItem::create($validated);
+            $item = BookItem::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Item buku berhasil ditambahkan'
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Item buku berhasil ditambahkan',
+                'item' => $item
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

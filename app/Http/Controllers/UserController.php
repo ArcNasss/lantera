@@ -39,7 +39,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'nomor_identitas' => 'required|integer|unique:users,nomor_identitas|max:20',
+            'nomor_identitas' => 'required|string|max:20|unique:users,nomor_identitas',
             'password' => 'required|string|min:6',
             'role' => 'required|in:admin,petugas,peminjam',
         ]);
@@ -61,7 +61,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'nomor_identitas' => 'required|integer|max:20|unique:users,nomor_identitas,' . $user->id,
+            'nomor_identitas' => 'required|string|max:20|unique:users,nomor_identitas,' . $user->id,
             'password' => 'nullable|string|min:6',
             'role' => 'required|in:admin,petugas,peminjam',
         ]);

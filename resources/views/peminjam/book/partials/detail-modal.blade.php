@@ -73,6 +73,7 @@
 
                     <!-- Action Buttons -->
                     <div class="flex gap-3 mt-6">
+                        @auth
                         <form :action="'/cart/' + selectedBook.id" method="POST" class="flex-1">
                             @csrf
                             <button
@@ -83,6 +84,15 @@
                                 Tambah ke Keranjang
                             </button>
                         </form>
+                        @else
+                        <button
+                            type="button"
+                            class="w-full px-6 py-3 bg-gray-300 text-gray-500 rounded-lg font-semibold flex items-center justify-center cursor-not-allowed opacity-70"
+                            disabled>
+                            <i class="fas fa-shopping-cart mr-2"></i>
+                            Login untuk meminjam
+                        </button>
+                        @endauth
                     </div>
                 </div>
             </div>

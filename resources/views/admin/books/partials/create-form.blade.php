@@ -1,4 +1,4 @@
-<form method="POST" action="{{ route('books.store') }}" enctype="multipart/form-data" class="space-y-4" x-data="{ items: [{kode: ''}] }">
+<form method="POST" action="{{ route('books.store') }}" enctype="multipart/form-data" class="space-y-4">
     @csrf
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -141,52 +141,6 @@
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
         </div>
-    </div>
-
-    <!-- Kode Buku Items (Dynamic) -->
-    <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-            Kode Buku Items <span class="text-red-500">*</span>
-        </label>
-        <p class="text-xs text-gray-500 mb-3">Masukkan kode buku untuk setiap eksemplar fisik</p>
-        
-        <div class="space-y-2">
-            <template x-for="(item, index) in items" :key="index">
-                <div class="flex gap-2">
-                    <input
-                        type="text"
-                        :name="'kode_buku[' + index + ']'"
-                        x-model="item.kode"
-                        placeholder="Contoh: BK-001"
-                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        required
-                    >
-                    <button
-                        type="button"
-                        @click="items.splice(index, 1)"
-                        x-show="items.length > 1"
-                        class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
-                    >
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </template>
-        </div>
-
-        <button
-            type="button"
-            @click="items.push({kode: ''})"
-            class="mt-3 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors text-sm font-medium"
-        >
-            <i class="fas fa-plus mr-1"></i> Tambah Item
-        </button>
-
-        @error('kode_buku')
-            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-        @enderror
-        @error('kode_buku.*')
-            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-        @enderror
     </div>
 
     <!-- Foto -->

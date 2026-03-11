@@ -15,9 +15,24 @@
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'w-64' : 'w-20'" class="bg-white border-r border-gray-200 flex flex-col transition-all duration-300">
             <!-- Logo -->
-            <div class="p-4 border-b border-gray-200">
-                <h1 x-show="sidebarOpen" class="text-3xl font-bold text-cyan-500">lantera</h1>
-                <img x-show="!sidebarOpen" src="{{ asset('image/logoClean.png') }}" alt="Logo" class="w-14 ">
+            <div class="h-20 border-b border-gray-200 flex items-center px-6">
+                <div class="flex items-center gap-3 w-full"
+                    :class="sidebarOpen ? 'justify-start' : 'justify-center'">
+
+                    <img
+                        src="{{ asset('image/logoLantera.png') }}"
+                        alt="Lantera Logo"
+                        class="h-10 object-contain"
+                    >
+
+                    <span
+                        x-show="sidebarOpen"
+                        x-transition
+                        class="text-2xl font-bold text-cyan-500 whitespace-nowrap"
+                    >
+                        lantera
+                    </span>
+                </div>
             </div>
 
             <!-- Menu Navigation -->
@@ -67,11 +82,11 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Top Navbar -->
-            <header class="bg-white border-b border-gray-200 px-6 py-4">
-                <div class="flex items-center justify-between">
+            <header class="bg-white border-b border-gray-200 h-20 flex items-center px-6">
+                <div class="flex items-center justify-between w-full">
                     <div class="flex items-center space-x-4">
                         <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-bars w-6 h-6 text-xl"></i>
+                            <i class="fas fa-bars text-xl"></i>
                         </button>
                         <h2 class="text-2xl font-semibold text-gray-800">@yield('Dashboard')</h2>
                     </div>
@@ -82,13 +97,13 @@
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" class="flex items-center space-x-3 focus:outline-none">
                                 <div class="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                    A
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                                 </div>
                                 <div class="text-left hidden md:block">
                                     <p class="text-sm font-medium text-gray-700">{{ Auth::user()->name }}</p>
                                     <p class="text-xs text-gray-500">{{ Auth::user()->role }}</p>
                                 </div>
-                                <i class="fas fa-chevron-down w-4 h-4 text-gray-400"></i>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
                             </button>
 
                             <!-- Dropdown Menu -->

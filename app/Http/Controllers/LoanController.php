@@ -13,11 +13,34 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class LoanController extends Controller
 {
     // Method untuk Petugas
-    public function petugasIndex()
+    public function petugasIndex(Request $request)
     {
-        $loans = Loan::with(['user', 'bookItem.book.category', 'petugas'])
-            ->whereIn('status', ['pending', 'disetujui', 'ditolak','dikembalikan'])
-            ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+        $query = Loan::with(['user', 'bookItem.book.category', 'petugas'])
+            ->whereIn('status', ['pending', 'disetujui', 'ditolak','dikembalikan']);
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('nomor_identitas', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('bookItem.book', function($q) use ($search) {
+                    $q->where('judul', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('bookItem', function($q) use ($search) {
+                    $q->where('kode_buku', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        // Status filter
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $loans = $query->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
             ->latest()
             ->get();
 
@@ -25,11 +48,33 @@ class LoanController extends Controller
     }
 
     // Method untuk Admin (View Only)
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $loans = Loan::with(['user', 'bookItem.book.category', 'petugas'])
-            ->latest()
-            ->get();
+        $query = Loan::with(['user', 'bookItem.book.category', 'petugas']);
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('nomor_identitas', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('bookItem.book', function($q) use ($search) {
+                    $q->where('judul', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('bookItem', function($q) use ($search) {
+                    $q->where('kode_buku', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        // Status filter
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $loans = $query->latest()->get();
 
         return view('admin.peminjaman.index', compact('loans'));
     }
@@ -126,16 +171,8 @@ class LoanController extends Controller
         $loan = Loan::with(['user', 'bookItem.book.category', 'petugas'])
             ->findOrFail($id);
 
-        // Ambil semua peminjaman aktif user ini (untuk ditampilkan di kartu)
-        $activeLoans = Loan::with(['bookItem.book.category'])
-            ->where('user_id', $loan->user_id)
-            ->whereIn('status', ['disetujui'])
-            ->latest()
-            ->get();
-
         $data = [
             'loan' => $loan,
-            'activeLoans' => $activeLoans,
             'user' => $loan->user,
             'petugas' => $loan->petugas,
         ];
@@ -143,7 +180,7 @@ class LoanController extends Controller
         $pdf = Pdf::loadView('petugas.pdf.kartu-peminjaman', $data);
         $pdf->setPaper('a4', 'portrait');
 
-        return $pdf->stream('Kartu-Peminjaman-' . $loan->user->name . '-' . now()->format('Ymd') . '.pdf');
+        return $pdf->stream('Kartu-Peminjaman-' . $loan->bookItem->kode_buku . '-' . now()->format('Ymd') . '.pdf');
     }
 
     public function reject(Request $request, $id)

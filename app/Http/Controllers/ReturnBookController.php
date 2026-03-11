@@ -12,21 +12,65 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class ReturnBookController extends Controller
 {
     // Riwayat pengembalian untuk Petugas
-    public function index()
+    public function index(Request $request)
     {
-        $returns = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas'])
-            ->latest()
-            ->get();
+        $query = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas']);
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('loan.user', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('nomor_identitas', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('loan.bookItem.book', function($q) use ($search) {
+                    $q->where('judul', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('loan.bookItem', function($q) use ($search) {
+                    $q->where('kode_buku', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        // Kondisi filter
+        if ($request->has('kondisi') && $request->kondisi) {
+            $query->where('kondisi', $request->kondisi);
+        }
+
+        $returns = $query->latest()->get();
 
         return view('petugas.peminjaman.riwayat', compact('returns'));
     }
 
     // Riwayat pengembalian untuk Admin (View Only)
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $returns = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas'])
-            ->latest()
-            ->get();
+        $query = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas']);
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('loan.user', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('nomor_identitas', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('loan.bookItem.book', function($q) use ($search) {
+                    $q->where('judul', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('loan.bookItem', function($q) use ($search) {
+                    $q->where('kode_buku', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        // Kondisi filter
+        if ($request->has('kondisi') && $request->kondisi) {
+            $query->where('kondisi', $request->kondisi);
+        }
+
+        $returns = $query->latest()->get();
 
         return view('admin.peminjaman.riwayat', compact('returns'));
     }
@@ -179,6 +223,23 @@ class ReturnBookController extends Controller
         $query = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas'])
             ->where('denda', '>', 0);
 
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('loan.user', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('nomor_identitas', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('loan.bookItem.book', function($q) use ($search) {
+                    $q->where('judul', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('loan.bookItem', function($q) use ($search) {
+                    $q->where('kode_buku', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
         // Filter berdasarkan status
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
@@ -213,6 +274,24 @@ class ReturnBookController extends Controller
         $query = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas'])
             ->where('denda', '>', 0);
 
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('loan.user', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('nomor_identitas', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('loan.bookItem.book', function($q) use ($search) {
+                    $q->where('judul', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('loan.bookItem', function($q) use ($search) {
+                    $q->where('kode_buku', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        // Status filter
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }

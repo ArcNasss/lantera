@@ -42,8 +42,6 @@ class BookController extends Controller
             'penerbit' => 'required|string|max:255',
             'tahun' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'nomor_rak' => 'required|string|max:50',
-            'kode_buku' => 'required|array|min:1',
-            'kode_buku.*' => 'required|string|unique:book_items,kode_buku|max:50',
         ]);
 
         if ($request->hasFile('foto')) {
@@ -51,13 +49,6 @@ class BookController extends Controller
         }
 
         $book = Book::create($validated);
-        foreach ($request->kode_buku as $kode) {
-            BookItem::create([
-                'book_id' => $book->id,
-                'kode_buku' => $kode,
-                'status' => 'available',
-            ]);
-        }
 
         return redirect()->route('books.index')->with('success', true);
     }

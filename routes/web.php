@@ -11,10 +11,15 @@ use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ReturnBookController;
+use App\Http\Controllers\GuestBookController;
 
 // Public Routes
 Route::get('/', [BookController::class, 'list'])->name('home');
 Route::get('list-buku', [BookController::class, 'list'])->name('peminjam.list-buku');
+
+// Guest Book Routes (Public - No Login Required)
+Route::get('/buku-tamu', [GuestBookController::class, 'create'])->name('guest-book.create');
+Route::post('/buku-tamu', [GuestBookController::class, 'store'])->name('guest-book.store');
 
 // Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -61,6 +66,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     // Admin Denda Routes (View Only)
     Route::get('/denda', [ReturnBookController::class, 'adminDendaIndex'])->name('admin.denda.index');
     Route::get('/denda/export', [ReturnBookController::class, 'exportDenda'])->name('admin.denda.export');
+
+    // Admin Guest Book Routes
+    Route::get('/guest-book', [GuestBookController::class, 'adminIndex'])->name('admin.guest-book.index');
+    Route::delete('/guest-book/{id}', [GuestBookController::class, 'destroy'])->name('admin.guest-book.destroy');
 });
 
 Route::middleware(['auth', 'role:petugas'])->group(function () {
@@ -70,6 +79,7 @@ Route::middleware(['auth', 'role:petugas'])->group(function () {
     Route::get('/peminjaman/riwayat', [ReturnBookController::class, 'index'])->name('peminjaman.riwayat');
     Route::get('/peminjaman/{id}/kartu-pdf', [LoanController::class, 'downloadKartu'])->name('peminjaman.download-kartu');
 
+    Route::get('/pengembalian', [returnBookController::class, 'index'])->name('pengembalian.index');
     Route::get('/pengembalian/create', [ReturnBookController::class, 'create'])->name('pengembalian.create');
     Route::post('/pengembalian/search', [ReturnBookController::class, 'search'])->name('pengembalian.search');
     Route::post('/pengembalian', [ReturnBookController::class, 'store'])->name('pengembalian.store');

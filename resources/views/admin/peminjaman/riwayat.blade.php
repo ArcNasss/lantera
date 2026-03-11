@@ -13,21 +13,55 @@
             </div>
         </div>
 
+        <!-- Search & Filter -->
+        <div class="p-6 border-b border-gray-200">
+            <form method="GET" action="{{ route('admin.peminjaman.riwayat') }}" class="flex items-center justify-between gap-4">
+                <div class="flex-1 max-w-md">
+                    <div class="relative">
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Cari peminjam, judul buku, atau kode buku..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        >
+                        <i class="fas fa-search w-5 h-5 text-gray-400 absolute left-3 top-2.5"></i>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select name="kondisi" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        <option value="">Semua Kondisi</option>
+                        <option value="baik" {{ request('kondisi') == 'baik' ? 'selected' : '' }}>Baik</option>
+                        <option value="rusak" {{ request('kondisi') == 'rusak' ? 'selected' : '' }}>Rusak</option>
+                        <option value="hilang" {{ request('kondisi') == 'hilang' ? 'selected' : '' }}>Hilang</option>
+                    </select>
+                    <button type="submit" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors">
+                        Cari
+                    </button>
+                    @if(request('search') || request('kondisi'))
+                    <a href="{{ route('admin.peminjaman.riwayat') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
+                        Reset
+                    </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         <!-- Table -->
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
                     <tr class="bg-cyan-500 text-white">
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-16">No</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider w-20">Foto</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Judul Buku</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider w-32">Peminjam</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider w-32">Kategori</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-28">Kondisi</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-28">Denda</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-36">Tgl Kembali</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-32">Petugas</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-24">Aksi</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-16">No</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold w-20">Foto</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold">Judul Buku</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold w-32">Peminjam</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold w-32">Kategori</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-28">Kondisi</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-28">Denda</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-36">Tgl Kembali</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-32">Petugas</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-24">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">

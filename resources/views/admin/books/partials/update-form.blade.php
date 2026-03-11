@@ -1,4 +1,96 @@
-<div x-data="{ activeTab: 'info', items: {{ json_encode($book->bookItems) }}, editingItem: null, newItem: { kode_buku: '' } }">
+<div x-data="{
+    activeTab: 'info',
+    items: {{ json_encode($book->bookItems) }},
+    editingItem: null,
+
+    addItem() {
+        const tempId = 'temp_' + Date.now();
+        this.items.push({
+            id: tempId,
+            kode_buku: '',
+            status: 'available',
+            isNew: true
+        });
+        this.editingItem = tempId;
+    },
+
+    saveNewItem(item, index) {
+        if (!item.kode_buku) {
+            return;
+        }
+
+        fetch('{{ route("book-items.store") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                book_id: {{ $book->id }},
+                kode_buku: item.kode_buku
+            })
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(err => Promise.reject(err));
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.success && data.item) {
+                this.items[index] = data.item;
+                this.editingItem = null;
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+    },
+
+    cancelNewItem(index) {
+        this.items.splice(index, 1);
+        this.editingItem = null;
+    },
+
+    updateItem(item) {
+        fetch(`/admin/book-items/${item.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                kode_buku: item.kode_buku,
+                status: item.status
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                this.editingItem = null;
+            }
+        })
+        .catch(err => console.error('Error:', err));
+    },
+
+    deleteItem(itemId, index) {
+        if (!confirm('Yakin ingin menghapus item ini?')) return;
+
+        fetch(`/admin/book-items/${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                this.items.splice(index, 1);
+            }
+        })
+        .catch(err => console.error('Error:', err));
+    }
+}">
     <!-- Tabs -->
     <div class="flex border-b mb-4">
         <button
@@ -219,34 +311,23 @@
 
     <!-- Tab Content: Kelola Item -->
     <div x-show="activeTab === 'items'" x-cloak class="space-y-4">
-        <!-- Add New Item Form -->
-        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 class="text-sm font-semibold text-gray-900 mb-3">
-                <i class="fas fa-plus-circle text-green-600 mr-1"></i> Tambah Item Baru
-            </h4>
-            <div class="flex gap-2">
-                <input
-                    type="text"
-                    x-model="newItem.kode_buku"
-                    placeholder="Kode Buku (contoh: BK-001)"
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                <button
-                    type="button"
-                    @click="addItem()"
-                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
-                >
-                    <i class="fas fa-plus mr-1"></i> Tambah
-                </button>
-            </div>
+        <!-- Add New Item Button -->
+        <div class="flex justify-end">
+            <button
+                type="button"
+                @click="addItem()"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
+            >
+                <i class="fas fa-plus mr-1"></i> Tambah Item Baru
+            </button>
         </div>
 
         <!-- Items List -->
         <div class="space-y-2 max-h-96 overflow-y-auto">
             <template x-for="(item, index) in items" :key="item.id">
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex items-center justify-between p-3 rounded-lg border" :class="item.isNew ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'">
                     <!-- View Mode -->
-                    <div x-show="editingItem !== item.id" class="flex items-center justify-between w-full">
+                    <div x-show="editingItem !== item.id && !item.isNew" class="flex items-center justify-between w-full">
                         <div class="flex items-center space-x-3">
                             <div class="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center">
                                 <i class="fas fa-barcode text-cyan-600 text-xs"></i>
@@ -254,7 +335,7 @@
                             <div>
                                 <p class="text-sm font-medium text-gray-900" x-text="item.kode_buku"></p>
                                 <p class="text-xs text-gray-500">
-                                    Status: 
+                                    Status:
                                     <span :class="{
                                         'text-green-600': item.status === 'available',
                                         'text-yellow-600': item.status === 'borrowed',
@@ -284,13 +365,14 @@
                         </div>
                     </div>
 
-                    <!-- Edit Mode -->
-                    <div x-show="editingItem === item.id" class="w-full">
+                    <!-- Edit Mode for Existing Items -->
+                    <div x-show="editingItem === item.id && !item.isNew" class="w-full">
                         <div class="flex gap-2 mb-2">
                             <input
                                 type="text"
                                 x-model="item.kode_buku"
                                 class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                placeholder="Kode Buku"
                             >
                             <select
                                 x-model="item.status"
@@ -313,6 +395,37 @@
                             <button
                                 type="button"
                                 @click="editingItem = null"
+                                class="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded-lg transition-colors"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Edit Mode for New Items -->
+                    <div x-show="item.isNew" class="w-full">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shrink-0">
+                                <i class="fas fa-plus text-white text-xs"></i>
+                            </div>
+                            <input
+                                type="text"
+                                x-model="item.kode_buku"
+                                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Masukkan Kode Buku (contoh: BK-001)"
+                            >
+                        </div>
+                        <div class="flex gap-2">
+                            <button
+                                type="button"
+                                @click="saveNewItem(item, index)"
+                                class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
+                            >
+                                <i class="fas fa-save mr-1"></i> Simpan
+                            </button>
+                            <button
+                                type="button"
+                                @click="cancelNewItem(index)"
                                 class="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded-lg transition-colors"
                             >
                                 Batal
@@ -346,78 +459,5 @@
         } else {
             container.classList.add('hidden');
         }
-    }
-
-    function addItem() {
-        if (!this.newItem.kode_buku) {
-            alert('Kode buku tidak boleh kosong');
-            return;
-        }
-
-        fetch('{{ route("book-items.store") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                book_id: {{ $book->id }},
-                kode_buku: this.newItem.kode_buku
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(data.message || 'Gagal menambahkan item');
-            }
-        })
-        .catch(err => alert('Terjadi kesalahan'));
-    }
-
-    function updateItem(item) {
-        fetch(`/admin/book-items/${item.id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                kode_buku: item.kode_buku,
-                status: item.status
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                this.editingItem = null;
-                alert(data.message);
-            } else {
-                alert(data.message || 'Gagal mengupdate item');
-            }
-        })
-        .catch(err => alert('Terjadi kesalahan'));
-    }
-
-    function deleteItem(itemId, index) {
-        if (!confirm('Yakin ingin menghapus item ini?')) return;
-
-        fetch(`/admin/book-items/${itemId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                this.items.splice(index, 1);
-                alert(data.message);
-            } else {
-                alert(data.message || 'Gagal menghapus item');
-            }
-        })
-        .catch(err => alert('Terjadi kesalahan'));
     }
 </script>

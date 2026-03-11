@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Bukti Peminjaman - {{ $user->name }}</title>
+    <title>Bukti Peminjaman - {{ $loan->bookItem->kode_buku }} - {{ $user->name }}</title>
     <style>
         /* Standar Ukuran A4 untuk dompdf */
         @page {
@@ -196,21 +196,13 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($activeLoans as $index => $activeLoan)
             <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $activeLoan->bookItem->book->judul }}</td>
-                <td class="text-center">{{ $activeLoan->bookItem->kode_buku }}</td>
-                <td class="text-center">{{ \Carbon\Carbon::parse($activeLoan->tanggal_pinjam)->format('d/m/Y') }}</td>
-                <td class="text-center">{{ \Carbon\Carbon::parse($activeLoan->tanggal_kembali)->format('d/m/Y') }}</td>
+                <td class="text-center">1</td>
+                <td>{{ $loan->bookItem->book->judul }}</td>
+                <td class="text-center">{{ $loan->bookItem->kode_buku }}</td>
+                <td class="text-center">{{ \Carbon\Carbon::parse($loan->tanggal_pinjam)->format('d/m/Y') }}</td>
+                <td class="text-center">{{ \Carbon\Carbon::parse($loan->tanggal_kembali)->format('d/m/Y') }}</td>
             </tr>
-            @empty
-            <tr>
-                <td colspan="5" class="text-center" style="padding: 20px; color: #9CA3AF;">
-                    Tidak ada buku yang sedang dipinjam
-                </td>
-            </tr>
-            @endforelse
         </tbody>
     </table>
 

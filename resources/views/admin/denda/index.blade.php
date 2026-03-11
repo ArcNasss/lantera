@@ -58,19 +58,28 @@
 
             <!-- Filter & Export -->
             <div class="flex items-center justify-between gap-4">
-                <!-- Status Filter -->
-                <form method="GET" action="{{ route('admin.denda.index') }}" class="flex items-center gap-2">
-                    <label for="status" class="text-sm font-medium text-gray-700">Filter Status:</label>
+                <!-- Search & Status Filter -->
+                <form method="GET" action="{{ route('admin.denda.index') }}" class="flex items-center gap-2 flex-1">
+                    <div class="relative flex-1 max-w-md">
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Cari peminjam, judul buku, atau kode buku..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        >
+                        <i class="fas fa-search w-5 h-5 text-gray-400 absolute left-3 top-2.5"></i>
+                    </div>
                     <select name="status" id="status"
                             class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                        <option value="all" {{ request('status') == 'all' || !request('status') ? 'selected' : '' }}>Semua</option>
+                        <option value="all" {{ request('status') == 'all' || !request('status') ? 'selected' : '' }}>Semua Status</option>
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Lunas</option>
                     </select>
                     <button type="submit" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors">
                         Cari
                     </button>
-                    @if(request('status') && request('status') != 'all')
+                    @if(request('search') || (request('status') && request('status') != 'all'))
                     <a href="{{ route('admin.denda.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
                         Reset
                     </a>
@@ -90,15 +99,15 @@
             <table class="w-full">
                 <thead>
                     <tr class="bg-cyan-500 text-white">
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-16">No</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider w-20">Foto</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Judul Buku</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider w-32">Peminjam</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-28">Kondisi</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-28">Denda</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-28">Status</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-36">Tgl Kembali</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-24">Aksi</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-16">No</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold w-20">Foto</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold">Judul Buku</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold w-32">Peminjam</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-28">Kondisi</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-28">Denda</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-28">Status</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-36">Tgl Kembali</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold w-24">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
