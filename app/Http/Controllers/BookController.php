@@ -28,7 +28,17 @@ class BookController extends Controller
         $books = $query->latest()->paginate(10);
         $categories = Category::where('is_active', true)->get();
 
-        return view('admin.books.index', compact('books', 'categories'));
+        $totalJudul = Book::count();
+        $totalEksemplar = BookItem::count();
+        $totalKategori = Category::where('is_active', true)->count();
+
+        return view('admin.books.index', compact('books', 'categories', 'totalJudul', 'totalEksemplar', 'totalKategori'));
+    }
+
+    public function create()
+    {
+        $categories = Category::where('is_active', true)->get();
+        return view('admin.books.create', compact('categories'));
     }
 
     public function store(Request $request)
@@ -51,6 +61,18 @@ class BookController extends Controller
         $book = Book::create($validated);
 
         return redirect()->route('books.index')->with('success', true);
+    }
+
+    public function edit(Book $book)
+    {
+        $categories = Category::where('is_active', true)->get();
+        return view('admin.books.edit', compact('book', 'categories'));
+    }
+
+    public function show(Book $book)
+    {
+        $book->load('category', 'bookItems');
+        return view('admin.books.show', compact('book'));
     }
 
     public function update(Request $request, Book $book)

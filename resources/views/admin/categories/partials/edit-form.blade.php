@@ -8,8 +8,9 @@
         this.isSubmitting = true;
 
         const formData = new FormData(event.target);
+        formData.append('_method', 'PUT');
 
-        fetch('{{ route('categories.store') }}', {
+        fetch('{{ route('categories.update', $category->id) }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -36,13 +37,14 @@
 
     <!-- Nama Kategori -->
     <div>
-        <label for="nama_kategori" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="nama_kategori_{{ $category->id }}" class="block text-sm font-medium text-gray-700 mb-2">
             Nama Kategori<span class="text-red-500">*</span>
         </label>
         <input
             type="text"
-            id="nama_kategori"
+            id="nama_kategori_{{ $category->id }}"
             name="nama_kategori"
+            value="{{ $category->nama_kategori }}"
             placeholder="Masukkan nama kategori"
             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:ring-cyan-500"
             :class="errors.nama_kategori ? 'border-red-500 focus:ring-red-500' : ''"

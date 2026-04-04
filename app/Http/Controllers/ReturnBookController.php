@@ -38,9 +38,13 @@ class ReturnBookController extends Controller
             $query->where('kondisi', $request->kondisi);
         }
 
-        $returns = $query->latest()->get();
+        $returns = $query->latest()->paginate(10)->withQueryString();
 
-        return view('petugas.peminjaman.riwayat', compact('returns'));
+        $totalPengembalian = ReturnBook::count();
+        $totalBermasalah   = ReturnBook::whereIn('kondisi', ['rusak', 'hilang'])->count();
+        $totalDendaSum     = ReturnBook::where('denda', '>', 0)->sum('denda');
+
+        return view('petugas.peminjaman.riwayat', compact('returns', 'totalPengembalian', 'totalBermasalah', 'totalDendaSum'));
     }
 
     // Riwayat pengembalian untuk Admin (View Only)
@@ -70,9 +74,13 @@ class ReturnBookController extends Controller
             $query->where('kondisi', $request->kondisi);
         }
 
-        $returns = $query->latest()->get();
+        $returns = $query->latest()->paginate(10)->withQueryString();
 
-        return view('admin.peminjaman.riwayat', compact('returns'));
+        $totalPengembalian = ReturnBook::count();
+        $totalBermasalah   = ReturnBook::whereIn('kondisi', ['rusak', 'hilang'])->count();
+        $totalDendaSum     = ReturnBook::where('denda', '>', 0)->sum('denda');
+
+        return view('admin.peminjaman.riwayat', compact('returns', 'totalPengembalian', 'totalBermasalah', 'totalDendaSum'));
     }
 
     public function create()
@@ -82,20 +90,46 @@ class ReturnBookController extends Controller
 
     public function search(Request $request)
     {
-        $request->validate([
-            'loan_id' => 'required|integer',
-        ]);
-
-        $loan = Loan::with(['user', 'bookItem.book.category'])
-            ->where('id', $request->loan_id)
-            ->where('status', 'disetujui')
-            ->first();
-
-        if (!$loan) {
-            return redirect()->back()->with('error', 'ID Peminjaman tidak ditemukan atau sudah dikembalikan');
+        // Direct selection from multi-result list
+        if ($request->filled('loan_id')) {
+            $loan = Loan::with(['user', 'bookItem.book.category'])
+                ->where('status', 'disetujui')
+                ->findOrFail($request->loan_id);
+            return view('petugas.pengembalian.create', compact('loan'));
         }
 
-        return view('petugas.pengembalian.create', compact('loan'));
+        $request->validate([
+            'search' => 'required|string|min:2',
+        ]);
+
+        $search = $request->search;
+        $loans = Loan::with(['user', 'bookItem.book.category'])
+            ->where('status', 'disetujui')
+            ->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('nomor_identitas', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('bookItem.book', function ($q) use ($search) {
+                    $q->where('judul', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('bookItem', function ($q) use ($search) {
+                    $q->where('kode_buku', 'like', '%' . $search . '%');
+                });
+            })
+            ->latest()
+            ->get();
+
+        if ($loans->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada peminjaman aktif yang sesuai dengan pencarian');
+        }
+
+        if ($loans->count() === 1) {
+            $loan = $loans->first();
+            return view('petugas.pengembalian.create', compact('loan'));
+        }
+
+        return view('petugas.pengembalian.create', compact('loans'));
     }
 
     public function store(Request $request)
@@ -113,21 +147,21 @@ class ReturnBookController extends Controller
 
             // Calculate denda otomatis
             $dendaKeterlambatan = 0;
-            $tanggalKembali = \Carbon\Carbon::parse($loan->tanggal_kembali);
-            $sekarang = \Carbon\Carbon::now();
+            $tanggalKembali = \Carbon\Carbon::parse($loan->tanggal_kembali)->startOfDay();
+            $sekarang = \Carbon\Carbon::now()->startOfDay();
 
             if ($sekarang->greaterThan($tanggalKembali)) {
-                $daysLate = abs($sekarang->diffInDays($tanggalKembali, false));
-                $dendaKeterlambatan = $daysLate * 2000; // Rp 2.000 per hari
+                $daysLate = (int) $tanggalKembali->diffInDays($sekarang);
+                $dendaKeterlambatan = $daysLate * 2000;
             }
 
             // Denda kondisi buku
             $dendaKondisi = 0;
             if ($request->kondisi === 'rusak' || $request->kondisi === 'hilang') {
-                $dendaKondisi = 100000; // Rp 100.000 untuk rusak/hilang
+                $dendaKondisi = 100000;
             }
 
-            $totalDenda = abs($dendaKeterlambatan + $dendaKondisi);
+            $totalDenda = $dendaKeterlambatan + $dendaKondisi;
 
             // Create return book record
             ReturnBook::create([
@@ -170,52 +204,70 @@ class ReturnBookController extends Controller
             ->findOrFail($id);
 
         // Hitung detail denda
-        $tanggalKembali = \Carbon\Carbon::parse($return->loan->tanggal_kembali);
-        $tanggalPengembalian = \Carbon\Carbon::parse($return->tanggal_pengembalian);
+        $tanggalKembali = \Carbon\Carbon::parse($return->loan->tanggal_kembali)->startOfDay();
+        $tanggalPengembalian = \Carbon\Carbon::parse($return->tanggal_pengembalian)->startOfDay();
         $daysLate = 0;
         $dendaKeterlambatan = 0;
 
         if ($tanggalPengembalian->greaterThan($tanggalKembali)) {
-            $daysLate = abs($tanggalPengembalian->diffInDays($tanggalKembali, false));
+            $daysLate = (int) $tanggalKembali->diffInDays($tanggalPengembalian);
             $dendaKeterlambatan = $daysLate * 2000;
         }
 
         // Denda kondisi
         $dendaKondisi = 0;
-        $jenisKondisi = '-';
+        $kondisiLabel = 'Baik';
 
         if ($return->kondisi === 'rusak') {
             $dendaKondisi = 100000;
-            $jenisKondisi = 'Buku Rusak';
+            $kondisiLabel = 'Rusak';
         } elseif ($return->kondisi === 'hilang') {
             $dendaKondisi = 100000;
-            $jenisKondisi = 'Buku Hilang';
-        } elseif ($return->kondisi === 'baik' && $daysLate > 0) {
-            $jenisKondisi = 'Keterlambatan';
+            $kondisiLabel = 'Hilang';
+        }
+
+        $items = [];
+
+        if ($dendaKeterlambatan > 0) {
+            $items[] = [
+                'label' => 'Denda keterlambatan',
+                'description' => $daysLate . ' hari x Rp 2.000',
+                'nominal' => $dendaKeterlambatan,
+            ];
+        }
+
+        if ($dendaKondisi > 0) {
+            $items[] = [
+                'label' => $return->kondisi === 'hilang' ? 'Penggantian buku hilang' : 'Denda kondisi buku',
+                'description' => 'Kondisi buku: ' . $kondisiLabel,
+                'nominal' => $dendaKondisi,
+            ];
+        }
+
+        if (empty($items)) {
+            $items[] = [
+                'label' => 'Administrasi pengembalian',
+                'description' => 'Tidak ada denda tambahan',
+                'nominal' => $return->denda,
+            ];
         }
 
         $data = [
             'return' => $return,
             'user' => $return->loan->user,
             'invoiceNumber' => str_pad($return->id, 5, '0', STR_PAD_LEFT),
-            'items' => [
-                [
-                    'judul' => $return->loan->bookItem->book->judul,
-                    'jenis' => $jenisKondisi,
-                    'hari' => $daysLate,
-                    'nominal' => $return->denda,
-                ]
-            ],
+            'items' => $items,
             'dendaKeterlambatan' => $dendaKeterlambatan,
             'dendaKondisi' => $dendaKondisi,
             'daysLate' => $daysLate,
+            'kondisiLabel' => $kondisiLabel,
             'total' => $return->denda,
         ];
 
         $pdf = Pdf::loadView('petugas.pdf.invoice', $data);
-        $pdf->setPaper('a4', 'portrait');
+        $pdf->setPaper('a4', 'landscape');
 
-        return $pdf->stream('Invoice-Denda-' . $return->loan->user->name . '-' . now()->format('Ymd') . '.pdf');
+        return $pdf->download('Nota-Pembayaran-' . $return->loan->user->name . '-' . now()->format('Ymd') . '.pdf');
     }
 
     public function dendaIndex(Request $request)
@@ -245,7 +297,7 @@ class ReturnBookController extends Controller
             $query->where('status', $request->status);
         }
 
-        $denda = $query->latest()->get();
+        $denda = $query->latest()->paginate(10)->withQueryString();
 
         // Hitung statistik
         $totalDenda = ReturnBook::where('denda', '>', 0)->sum('denda');
@@ -296,7 +348,7 @@ class ReturnBookController extends Controller
             $query->where('status', $request->status);
         }
 
-        $denda = $query->latest()->get();
+        $denda = $query->latest()->paginate(10)->withQueryString();
 
         $totalDenda = ReturnBook::where('denda', '>', 0)->sum('denda');
         $totalPending = ReturnBook::where('denda', '>', 0)->where('status', 'pending')->sum('denda');

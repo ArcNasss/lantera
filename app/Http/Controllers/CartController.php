@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Models\Cart;
 use Illuminate\Support\Facades\Auth;
@@ -35,22 +36,19 @@ class CartController extends Controller
     {
         $user = Auth::user();
 
-        // Check if book exists and has available items
-        $book = \App\Models\Book::findOrFail($id);
+        $book = Book::findOrFail($id);
         $availableCount = $book->availableItems()->count();
 
         if ($availableCount < 1) {
             return back()->with('error', 'Buku tidak tersedia saat ini.');
         }
 
-        // Check if book already in cart
         $existingCart = Cart::where('book_id', $id)->where('user_id', $user->id)->first();
 
         if($existingCart){
             return back()->with('error', 'Buku sudah ada di keranjang. Atur jumlah di halaman keranjang.');
         }
 
-        // Create new cart item
         Cart::create([
             'book_id' => $id,
             'user_id' => $user->id,
@@ -102,7 +100,6 @@ class CartController extends Controller
      */
     public function destroy(Cart $cart)
     {
-        // Make sure user owns this cart item
         if ($cart->user_id !== Auth::id()) {
             abort(403);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PeminjamanExport;
 use Illuminate\Http\Request;
 use App\Models\Loan;
 use App\Models\Cart;
@@ -9,16 +10,15 @@ use App\Models\BookItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LoanController extends Controller
 {
-    // Method untuk Petugas
     public function petugasIndex(Request $request)
     {
         $query = Loan::with(['user', 'bookItem.book.category', 'petugas'])
             ->whereIn('status', ['pending', 'disetujui', 'ditolak','dikembalikan']);
 
-        // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -35,24 +35,26 @@ class LoanController extends Controller
             });
         }
 
-        // Status filter
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
         }
 
         $loans = $query->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
             ->latest()
-            ->get();
+            ->paginate(10)->withQueryString();
 
-        return view('petugas.peminjaman.index', compact('loans'));
+        $totalPeminjaman = Loan::whereIn('status', ['pending','disetujui','ditolak','dikembalikan'])->count();
+        $totalPending    = Loan::where('status', 'pending')->count();
+        $totalDisetujui  = Loan::where('status', 'disetujui')->count();
+
+        return view('petugas.peminjaman.index', compact('loans', 'totalPeminjaman', 'totalPending', 'totalDisetujui'));
     }
 
-    // Method untuk Admin (View Only)
+
     public function adminIndex(Request $request)
     {
         $query = Loan::with(['user', 'bookItem.book.category', 'petugas']);
 
-        // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -69,17 +71,19 @@ class LoanController extends Controller
             });
         }
 
-        // Status filter
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
         }
 
-        $loans = $query->latest()->get();
+        $loans = $query->latest()->paginate(10)->withQueryString();
 
-        return view('admin.peminjaman.index', compact('loans'));
+        $totalPeminjaman = Loan::count();
+        $totalPending    = Loan::where('status', 'pending')->count();
+        $totalDisetujui  = Loan::where('status', 'disetujui')->count();
+
+        return view('admin.peminjaman.index', compact('loans', 'totalPeminjaman', 'totalPending', 'totalDisetujui'));
     }
 
-    // Method untuk Peminjam
     public function index()
     {
         $user = Auth::user();
@@ -183,6 +187,19 @@ class LoanController extends Controller
         return $pdf->stream('Kartu-Peminjaman-' . $loan->bookItem->kode_buku . '-' . now()->format('Ymd') . '.pdf');
     }
 
+    public function downloadMemberCard()
+    {
+        $user = Auth::user();
+
+        $pdf = Pdf::loadView('peminjam.pdf.kartu-anggota', [
+            'user' => $user,
+        ]);
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->stream('Kartu-Anggota-' . $user->nomor_identitas . '-' . now()->format('Ymd') . '.pdf');
+    }
+
+
     public function reject(Request $request, $id)
     {
         $request->validate([
@@ -201,21 +218,19 @@ class LoanController extends Controller
             'alasan_ditolak' => $request->alasan_ditolak,
         ]);
 
-        // Update status book item kembali ke available
         $loan->bookItem->update(['status' => 'available']);
 
         return redirect()->back()->with('success', 'Pengajuan peminjaman berhasil ditolak');
     }
 
-    // Export Peminjaman to Excel
     public function exportPeminjaman(Request $request)
     {
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $status = $request->input('status', 'all');
 
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\PeminjamanExport($startDate, $endDate, $status),
+        return Excel::download(
+            new PeminjamanExport($startDate, $endDate, $status),
             'Laporan_Peminjaman_' . date('Y-m-d_His') . '.xlsx'
         );
     }

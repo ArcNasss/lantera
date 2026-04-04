@@ -12,6 +12,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ReturnBookController;
 use App\Http\Controllers\GuestBookController;
+use App\Http\Controllers\GuideController;
 
 // Public Routes
 Route::get('/', [BookController::class, 'list'])->name('home');
@@ -48,8 +49,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
+    Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
     Route::get('/books', [BookController::class, 'index'])->name('books.index');
     Route::post('/books', [BookController::class, 'store'])->name('books.store');
+    Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
+    Route::get('/books/{book}/edit', [BookController::class, 'edit'])->name('books.edit');
     Route::put('/books/{book}', [BookController::class, 'update'])->name('books.update');
     Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
 
@@ -69,6 +73,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 
     // Admin Guest Book Routes
     Route::get('/guest-book', [GuestBookController::class, 'adminIndex'])->name('admin.guest-book.index');
+    Route::get('/guest-book/export', [GuestBookController::class, 'export'])->name('admin.guest-book.export');
     Route::delete('/guest-book/{id}', [GuestBookController::class, 'destroy'])->name('admin.guest-book.destroy');
 });
 
@@ -97,12 +102,17 @@ Route::middleware(['auth', 'role:peminjam,admin'])->group(function () {
 
     Route::get('/loans', [LoanController::class, 'index'])->name('peminjam.loan.index');
     Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
+    Route::get('/kartu-anggota', [LoanController::class, 'downloadMemberCard'])->name('peminjam.kartu-anggota');
 
 });
 
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'petugasDashboard'])->name('petugas.dashboard');
 });
+
+
+Route::get('/panduan', [GuideController::class, 'peminjam'])->name('peminjam.guides.index');
+Route::get('/panduan/{slug}', [GuideController::class, 'peminjamDetail'])->name('peminjam.guides.show');
 
 Route::middleware(['auth', 'role:admin,peminjam,petugas'])->group(function () {
 

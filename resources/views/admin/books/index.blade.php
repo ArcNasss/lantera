@@ -8,163 +8,197 @@
     @if(session('success'))
         <x-flash-message type="success" />
     @endif
-
     @if(session('deleted'))
         <x-flash-message type="deleted" />
     @endif
-
     @if(session('updated'))
         <x-flash-message type="updated" />
     @endif
-
     @if(session('error'))
         <x-flash-message type="error" message="{{ session('error') }}" />
     @endif
 
-    <div class="bg-white rounded-lg shadow">
-        <!-- Header -->
-        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
-            <div>
-                <h3 class="text-xl font-bold text-gray-900">Kelola Buku</h3>
-                <p class="text-sm text-gray-600 mt-1">Manajemen data buku perpustakaan</p>
-            </div>
-            <button
-                @click="$dispatch('open-modal', 'create-book')"
-                class="flex items-center space-x-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-5">
+        <h3 class="text-2xl font-bold text-gray-900">Kelola Buku</h3>
+        <a href="{{ route('books.create') }}" class="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors text-sm font-medium">
+            <i class="fas fa-plus"></i>
+            <span>Tambah Buku</span>
+        </a>
+    </div>
+
+    <!-- Search & Filter (outside card) -->
+    <form method="GET" action="{{ route('books.index') }}" id="filter-form" class="flex items-center justify-between mb-5">
+        <!-- Search pill -->
+        <div class="relative w-80">
+            <i class="fas fa-search text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 text-sm"></i>
+            <input
+                type="text"
+                name="search"
+                id="search-input"
+                value="{{ request('search') }}"
+                placeholder="Search"
+                class="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:border-gray-400"
+                autocomplete="off"
             >
-                <i class="fas fa-plus w-5 h-5"></i>
-                <span>Tambah Data</span>
-            </button>
         </div>
 
-        <!-- Search & Filter -->
-        <div class="p-6 border-b border-gray-200">
-            <form method="GET" action="{{ route('books.index') }}" class="flex items-center justify-between gap-4">
-                <div class="flex-1 max-w-md">
-                    <div class="relative">
-                        <input
-                            type="text"
-                            name="search"
-                            value="{{ request('search') }}"
-                            placeholder="Search"
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        >
-                        <i class="fas fa-search w-5 h-5 text-gray-400 absolute left-3 top-2.5"></i>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <select name="category_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                        <option value="">Semua Kategori</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                                {{ $category->nama_kategori }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <button type="submit" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors">
-                        Cari
-                    </button>
-                    @if(request('search') || request('category_id'))
-                    <a href="{{ route('books.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">
-                        Reset
-                    </a>
-                    @endif
-                </div>
-            </form>
-        </div>
+        <!-- Right: Category filter -->
+        <div class="flex items-center gap-3">
+            <span class="text-sm font-medium text-gray-600">Kategori :</span>
+            <select name="category_id" id="category-select" class="gap-2 px-9 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                <option value="">Semua</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                        {{ $category->nama_kategori }}
+                    </option>
+                @endforeach
+            </select>
 
-        <!-- Table -->
+        </div>
+    </form>
+
+    <script>
+        (function () {
+            var form = document.getElementById('filter-form');
+            var searchInput = document.getElementById('search-input');
+            var categorySelect = document.getElementById('category-select');
+            var debounceTimer;
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function () {
+                    form.submit();
+                }, 400);
+            });
+
+            categorySelect.addEventListener('change', function () {
+                form.submit();
+            });
+        })();
+    </script>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-5 mb-5 md:grid-cols-3">
+        <!-- Total Judul -->
+        <div class="relative overflow-hidden px-7 py-5 text-white shadow-sm" style="border-radius: 22px; min-height: 96px; background: linear-gradient(90deg, #1fa5d5 0%, #25b3e1 58%, #58c5ed 100%);">
+            <div class="absolute rounded-full" style="right: -56px; top: -60px; width: 216px; height: 216px; background: rgba(176, 235, 251, 0.24);"></div>
+            <div class="absolute rounded-full" style="right: -30px; top: -34px; width: 164px; height: 164px; background: rgba(193, 240, 252, 0.28);"></div>
+            <div class="absolute rounded-full" style="right: 4px; top: 0; width: 96px; height: 96px; background: rgba(214, 246, 254, 0.38);"></div>
+            <div class="relative z-10 flex h-full items-center justify-between gap-5">
+                <div class="pr-4">
+                    <p class="mb-1 text-[14px] font-medium leading-none text-white/95">Total Judul</p>
+                    <p class="text-[18px] font-bold leading-tight text-white">{{ $totalJudul }} buku</p>
+                </div>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style="background: rgba(244, 252, 255, 0.88);">
+                    <i class="fas fa-book text-[18px]" style="color: #1799c9;"></i>
+                </div>
+            </div>
+        </div>
+        <!-- Total Eksemplar -->
+        <div class="relative overflow-hidden px-7 py-5 text-white shadow-sm" style="border-radius: 22px; min-height: 96px; background: linear-gradient(90deg, #1fa5d5 0%, #25b3e1 58%, #58c5ed 100%);">
+            <div class="absolute rounded-full" style="right: -56px; top: -60px; width: 216px; height: 216px; background: rgba(176, 235, 251, 0.24);"></div>
+            <div class="absolute rounded-full" style="right: -30px; top: -34px; width: 164px; height: 164px; background: rgba(193, 240, 252, 0.28);"></div>
+            <div class="absolute rounded-full" style="right: 4px; top: 0; width: 96px; height: 96px; background: rgba(214, 246, 254, 0.38);"></div>
+            <div class="relative z-10 flex h-full items-center justify-between gap-5">
+                <div class="pr-4">
+                    <p class="mb-1 text-[14px] font-medium leading-none text-white/95">Total Eksemplar</p>
+                    <p class="text-[18px] font-bold leading-tight text-white">{{ $totalEksemplar }} eksemplar</p>
+                </div>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style="background: rgba(244, 252, 255, 0.88);">
+                    <i class="fas fa-layer-group text-[18px]" style="color: #1799c9;"></i>
+                </div>
+            </div>
+        </div>
+        <!-- Kategori Aktif -->
+        <div class="relative overflow-hidden px-7 py-5 text-white shadow-sm" style="border-radius: 22px; min-height: 96px; background: linear-gradient(90deg, #1fa5d5 0%, #25b3e1 58%, #58c5ed 100%);">
+            <div class="absolute rounded-full" style="right: -56px; top: -60px; width: 216px; height: 216px; background: rgba(176, 235, 251, 0.24);"></div>
+            <div class="absolute rounded-full" style="right: -30px; top: -34px; width: 164px; height: 164px; background: rgba(193, 240, 252, 0.28);"></div>
+            <div class="absolute rounded-full" style="right: 4px; top: 0; width: 96px; height: 96px; background: rgba(214, 246, 254, 0.38);"></div>
+            <div class="relative z-10 flex h-full items-center justify-between gap-5">
+                <div class="pr-4">
+                    <p class="mb-1 text-[14px] font-medium leading-none text-white/95">Kategori Aktif</p>
+                    <p class="text-[18px] font-bold leading-tight text-white">{{ $totalKategori }} kategori</p>
+                </div>
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style="background: rgba(244, 252, 255, 0.88);">
+                    <i class="fas fa-tags text-[18px]" style="color: #1799c9;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
-                    <tr class="bg-cyan-500 text-white">
-                        <th class="px-6 py-4 text-left text-sm font-semibold">No</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold">Foto</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold">Judul</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold">Kategori</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold">Penulis</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold">Penerbit</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold">Tahun</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold">Stok</th>
-                        <th class="px-6 py-4 text-center text-sm font-semibold">Aksi</th>
+                    <tr class="bg-cyan-500 text-white text-sm">
+                        <th class="px-5 py-3 text-left font-semibold w-12">No</th>
+                        <th class="px-5 py-3 text-left font-semibold">Judul Buku</th>
+                        <th class="px-5 py-3 text-left font-semibold">Kategori</th>
+                        <th class="px-5 py-3 text-left font-semibold">Penulis</th>
+                        <th class="px-5 py-3 text-left font-semibold">Tahun</th>
+                        <th class="px-5 py-3 text-center font-semibold w-24">Stok</th>
+                        <th class="px-5 py-3 text-center font-semibold w-28">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody class="divide-y divide-gray-100">
                     @forelse($books as $index => $book)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ $books->firstItem() + $index }}</td>
-                        <td class="px-6 py-4">
-                            @if($book->foto)
-                                <img src="{{ asset('storage/' . $book->foto) }}" alt="{{ $book->judul }}" class="w-12 h-16 object-cover rounded border border-gray-300">
-                            @else
-                                <div class="w-12 h-16 bg-gray-200 rounded border border-gray-300 flex items-center justify-center">
-                                    <i class="fas fa-image w-6 h-6 text-gray-400 text-xl"></i>
+                        <td class="px-5 py-4 text-sm text-gray-500">{{ $books->firstItem() + $index }}</td>
+                        <td class="px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                @if($book->foto)
+                                    <img src="{{ asset('storage/' . $book->foto) }}" alt="{{ $book->judul }}" class="w-9 h-12 object-cover rounded shrink-0 border border-gray-200">
+                                @else
+                                    <div class="w-9 h-12 bg-gray-100 rounded shrink-0 border border-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-book text-gray-300 text-xs"></i>
+                                    </div>
+                                @endif
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate max-w-56">{{ $book->judul }}</p>
+                                    <p class="text-xs text-gray-400 truncate max-w-56">{{ $book->penerbit }}</p>
                                 </div>
-                            @endif
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ $book->judul }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ $book->category->nama_kategori }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ $book->penulis }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ $book->penerbit }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ $book->tahun }}</td>
-                        <td class="px-6 py-4">
+                        <td class="px-5 py-4 text-sm text-gray-600">{{ $book->category->nama_kategori }}</td>
+                        <td class="px-5 py-4 text-sm text-gray-600">{{ $book->penulis }}</td>
+                        <td class="px-5 py-4 text-sm text-gray-600">{{ $book->tahun }}</td>
+                        <td class="px-5 py-4 text-center">
                             @php
                                 $availableCount = $book->availableItems()->count();
                                 $totalCount = $book->bookItems()->count();
                             @endphp
                             @if($availableCount > 0)
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
                                     {{ $availableCount }}/{{ $totalCount }}
                                 </span>
                             @else
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
                                     Habis
                                 </span>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center justify-center gap-2">
-                                <!-- Detail -->
-                                <button
-                                    @click="$dispatch('open-modal', 'detail-book-{{ $book->id }}')"
-                                    class="w-8 h-8 flex items-center justify-center bg-cyan-100 hover:bg-cyan-200 text-cyan-600 rounded-lg transition-colors"
-                                >
+                        <td class="px-5 py-4">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <a href="{{ route('books.show', $book->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-100 hover:bg-cyan-200 text-cyan-600 transition-colors">
                                     <i class="fas fa-eye text-sm"></i>
-                                </button>
-                                <!-- Edit -->
-                                <button
-                                    @click="$dispatch('open-modal','edit-book-{{ $book->id }}')"
-                                    class="w-8 h-8 flex items-center justify-center bg-yellow-100 hover:bg-yellow-200 text-yellow-600 rounded-lg transition-colors"
-                                >
+                                </a>
+                                <a href="{{ route('books.edit', $book->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-600 transition-colors">
                                     <i class="fas fa-edit text-sm"></i>
-                                </button>
-                                <!-- Delete -->
-                                <button
-                                    type="button"
-                                    @click="$dispatch('open-confirm-delete', { url: '{{ route('books.destroy', $book->id) }}' })"
-                                    class="w-8 h-8 flex items-center justify-center bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
-                                >
+                                </a>
+                                <button type="button" @click="$dispatch('open-confirm-delete', { url: '{{ route('books.destroy', $book->id) }}' })" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-100 hover:bg-red-200 text-red-600 transition-colors">
                                     <i class="fas fa-trash text-sm"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
-
-                    <!-- Modal Detail for this book -->
-                    <x-modal name="detail-book-{{ $book->id }}" title="Detail Buku" maxWidth="2xl">
-                        @include('admin.books.partials.detail', ['book' => $book])
-                    </x-modal>
-
-                    <!-- Modal Edit for this book -->
-                    <x-modal name="edit-book-{{ $book->id }}" title="Edit Buku" maxWidth="2xl">
-                        @include('admin.books.partials.update-form', ['book' => $book, 'categories' => $categories])
-                    </x-modal>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
-                            <i class="fas fa-book w-16 h-16 mx-auto text-gray-400 mb-4 block text-6xl"></i>
-                            <p class="text-lg font-medium">Tidak ada data buku</p>
-                            <p class="text-sm mt-1">Klik tombol "Tambah Data" untuk menambahkan buku baru</p>
+                        <td colspan="7" class="px-6 py-16 text-center text-gray-400">
+                            <i class="fas fa-book text-5xl mb-3 block"></i>
+                            <p class="text-base font-medium text-gray-500">Tidak ada data buku</p>
+                            <p class="text-sm mt-1">Klik tombol "Tambah Buku" untuk menambahkan buku baru</p>
                         </td>
                     </tr>
                     @endforelse
@@ -173,65 +207,61 @@
         </div>
 
         <!-- Pagination -->
-        <div class="px-6 py-4 border-t border-gray-200">
-            <div class="flex items-center justify-between">
-                <p class="text-sm text-gray-600">
-                    Menampilkan {{ $books->currentPage() }} dari {{ $books->lastPage() }} halaman
-                </p>
-                <div class="flex items-center space-x-2">
-                    {{-- Previous Button --}}
-                    @if ($books->onFirstPage())
-                        <button disabled class="px-3 py-2 text-gray-400 cursor-not-allowed rounded-lg">
-                            <i class="fas fa-chevron-left w-5 h-5"></i>
-                        </button>
-                    @else
-                        <a href="{{ $books->previousPageUrl() }}" class="px-3 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">
-                            <i class="fas fa-chevron-left w-5 h-5"></i>
-                        </a>
+        <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+            <p class="text-sm text-gray-500">
+                Menampilkan {{ $books->firstItem() ?? 0 }}–{{ $books->lastItem() ?? 0 }} dari {{ $books->total() }} data
+            </p>
+            <div class="flex items-center gap-1">
+                @if ($books->onFirstPage())
+                    <span class="w-8 h-8 flex items-center justify-center text-gray-300 rounded-lg cursor-not-allowed">
+                        <i class="fas fa-chevron-left text-xs"></i>
+                    </span>
+                @else
+                    <a href="{{ $books->previousPageUrl() }}" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-chevron-left text-xs"></i>
+                    </a>
+                @endif
+
+                @php
+                    $start = max(1, $books->currentPage() - 1);
+                    $end   = min($books->lastPage(), $books->currentPage() + 1);
+                @endphp
+
+                @if($start > 1)
+                    <a href="{{ $books->url(1) }}" class="w-8 h-8 flex items-center justify-center text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">1</a>
+                    @if($start > 2)
+                        <span class="w-8 h-8 flex items-center justify-center text-sm text-gray-400">...</span>
                     @endif
+                @endif
 
-                    {{-- Page Numbers (First 3, ..., Last) --}}
-                    @php
-                        $start = max(1, $books->currentPage() - 1);
-                        $end = min($books->lastPage(), $books->currentPage() + 1);
-                    @endphp
+                @for ($i = $start; $i <= $end; $i++)
+                    @if ($i == $books->currentPage())
+                        <span class="w-8 h-8 flex items-center justify-center text-sm bg-cyan-500 text-white rounded-lg font-medium">{{ $i }}</span>
+                    @else
+                        <a href="{{ $books->url($i) }}" class="w-8 h-8 flex items-center justify-center text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">{{ $i }}</a>
+                    @endif
+                @endfor
 
-                    @for ($i = $start; $i <= $end; $i++)
-                        @if ($i == $books->currentPage())
-                            <button class="px-4 py-2 bg-cyan-500 text-white rounded-lg">{{ $i }}</button>
-                        @else
-                            <a href="{{ $books->url($i) }}" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">{{ $i }}</a>
-                        @endif
-                    @endfor
-
+                @if($end < $books->lastPage())
                     @if($end < $books->lastPage() - 1)
-                        <span class="px-2 text-gray-500">...</span>
+                        <span class="w-8 h-8 flex items-center justify-center text-sm text-gray-400">...</span>
                     @endif
+                    <a href="{{ $books->url($books->lastPage()) }}" class="w-8 h-8 flex items-center justify-center text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">{{ $books->lastPage() }}</a>
+                @endif
 
-                    @if($end < $books->lastPage())
-                        <a href="{{ $books->url($books->lastPage()) }}" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">{{ $books->lastPage() }}</a>
-                    @endif
-
-                    {{-- Next Button --}}
-                    @if ($books->hasMorePages())
-                        <a href="{{ $books->nextPageUrl() }}" class="px-3 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">
-                            <i class="fas fa-chevron-right w-5 h-5"></i>
-                        </a>
-                    @else
-                        <button disabled class="px-3 py-2 text-gray-400 cursor-not-allowed rounded-lg">
-                            <i class="fas fa-chevron-right w-5 h-5"></i>
-                        </button>
-                    @endif
-                </div>
+                @if ($books->hasMorePages())
+                    <a href="{{ $books->nextPageUrl() }}" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </a>
+                @else
+                    <span class="w-8 h-8 flex items-center justify-center text-gray-300 rounded-lg cursor-not-allowed">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </span>
+                @endif
             </div>
         </div>
     </div>
 
-    <!-- Modal Create Book -->
-    <x-modal name="create-book" title="Tambah Buku" maxWidth="2xl">
-        @include('admin.books.partials.create-form', ['categories' => $categories])
-    </x-modal>
-
-    <!-- Confirm Delete Modal -->
     <x-confirm-delete />
 @endsection
+

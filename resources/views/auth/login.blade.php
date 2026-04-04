@@ -64,27 +64,6 @@
                             @enderror
                         </div>
 
-                        <!-- Remember Me & Forgot Password -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <input
-                                    id="remember"
-                                    name="remember"
-                                    type="checkbox"
-                                    class="h-4 w-4 text-cyan-500 focus:ring-cyan-500 border-gray-300 rounded"
-                                >
-                                <label for="remember" class="ml-2 block text-sm text-gray-700">
-                                    Ingat Login Saya
-                                </label>
-                            </div>
-
-                            <div class="text-sm">
-                                <a href="#" class="font-medium text-cyan-500 hover:text-cyan-600">
-                                    Lupa Kata Sandi?
-                                </a>
-                            </div>
-                        </div>
-
                         <!-- Submit Button -->
                         <div>
                             <button
@@ -116,7 +95,18 @@
                 <p class="text-lg text-cyan-50 mb-8">
                     Solusi pintar untuk komunikasi dan administrasi Perpustakaan.
                 </p>
-                <img src="{{ asset('image/authImage.png')}}" alt="" class="w-sm m-auto">
+
+                <div class="rounded-2xl p-1 backdrop-blur-sm">
+                    <div class="mx-auto flex items-center justify-center">
+                        <img src="{{ asset('image/smpn1balen.png') }}" alt="Logo SMPN 1 Balen" class="h-52 w-auto ">
+                    </div>
+                    <p class="mt-6 text-center text-lg font-semibold text-white">
+                        SMPN 1 Balen
+                    </p>
+                    <p class="mt-2 text-center text-sm font-medium text-cyan-50">
+                        Platform Peminjaman Buku
+                    </p>
+                </div>
             </div>
 
         </div>

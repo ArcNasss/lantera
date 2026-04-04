@@ -6,97 +6,94 @@ use App\Models\Book;
 use App\Models\User;
 use App\Models\Loan;
 use App\Models\ReturnBook;
+use App\Models\BookItem;
+use App\Models\Category;
+use App\Models\GuestBook;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Dashboard Admin
-        $totalBooks = Book::count();
-        $totalLoans = Loan::whereIn('status', ['pending', 'disetujui'])->count();
-        $totalReturns = Loan::where('status', 'dikembalikan')->count();
-        $totalMembers = User::where('role', 'peminjam')->count();
+        // Stat cards
+        $totalBooks       = Book::count();
+        $totalAnggota     = User::where('role', 'peminjam')->count();
+        $totalDendaSudahBayar = ReturnBook::where('status', 'paid')->where('denda', '>', 0)->sum('denda');
+        $totalKunjungan   = GuestBook::count();
 
-        // Data untuk Chart - Statistik peminjaman per bulan (12 bulan terakhir)
-        $chartData = [];
+        // Chart — peminjaman per bulan 12 bln terakhir
+        $chartData   = [];
         $chartLabels = [];
         for ($i = 11; $i >= 0; $i--) {
             $month = now()->subMonths($i);
-            $chartLabels[] = $month->format('M Y');
-            $chartData[] = Loan::whereYear('created_at', $month->year)
+            $chartLabels[] = $month->format('M');
+            $chartData[]   = Loan::whereYear('created_at', $month->year)
                 ->whereMonth('created_at', $month->month)
                 ->count();
         }
 
-        // Aktivitas Terbaru - 5 aktivitas terakhir (loans + returns)
-        $recentLoans = Loan::with(['user', 'bookItem.book'])
-            ->whereIn('status', ['pending', 'disetujui', 'dikembalikan'])
+        // Buku terpopuler
+        $popularBooks = Book::withCount(['bookItems as total_pinjam' => function ($q) {
+                $q->whereHas('loans');
+            }])
+            ->orderByDesc('total_pinjam')
+            ->take(3)
+            ->get();
+
+        // Denda belum bayar terbaru
+        $unpaidDenda = ReturnBook::with(['loan.user', 'loan.bookItem.book'])
+            ->where('status', 'pending')
+            ->where('denda', '>', 0)
             ->latest()
             ->take(5)
-            ->get()
-            ->map(function($loan) {
-                return [
-                    'user_name' => $loan->user->name,
-                    'book_title' => $loan->bookItem->book->judul,
-                    'type' => $loan->status === 'dikembalikan' ? 'Pengembalian' : 'Peminjaman',
-                    'status' => $loan->status,
-                    'date' => $loan->updated_at->format('d/m/Y'),
-                ];
-            });
+            ->get();
 
         return view('admin.dashboard', compact(
             'totalBooks',
-            'totalLoans',
-            'totalReturns',
-            'totalMembers',
+            'totalAnggota',
+            'totalDendaSudahBayar',
+            'totalKunjungan',
             'chartLabels',
             'chartData',
-            'recentLoans'
+            'popularBooks',
+            'unpaidDenda'
         ));
     }
 
     public function petugasDashboard()
     {
-        // Dashboard Petugas
-        $totalPending = Loan::where('status', 'pending')->count();
-        $totalApproved = Loan::whereIn('status', ['disetujui', 'dikembalikan'])->count();
-        $totalRejected = Loan::where('status', 'ditolak')->count();
-        $totalDamaged = ReturnBook::whereIn('kondisi', ['rusak', 'hilang'])->count();        $pendingCount = $totalPending; // Untuk info banner
-        // Data untuk Chart - Statistik peminjaman per bulan (12 bulan terakhir)
-        $chartData = [];
+        // Stat cards
+        $totalPending      = Loan::where('status', 'pending')->count();
+        $activeLoan        = Loan::where('status', 'disetujui')->count();
+        $todayReturns      = ReturnBook::whereDate('tanggal_pengembalian', today())->count();
+        $unpaidDendaCount  = ReturnBook::where('status', 'pending')->where('denda', '>', 0)->count();
+
+        // Chart — peminjaman per bulan 12 bulan terakhir
+        $chartData   = [];
         $chartLabels = [];
         for ($i = 11; $i >= 0; $i--) {
             $month = now()->subMonths($i);
-            $chartLabels[] = $month->format('M Y');
-            $chartData[] = Loan::whereYear('created_at', $month->year)
+            $chartLabels[] = $month->format('M');
+            $chartData[]   = Loan::whereYear('created_at', $month->year)
                 ->whereMonth('created_at', $month->month)
                 ->count();
         }
 
-        // Aktivitas Terbaru - 5 aktivitas terakhir
-        $recentLoans = Loan::with(['user', 'bookItem.book'])
-            ->whereIn('status', ['pending', 'disetujui', 'dikembalikan'])
+        // 5 pengajuan pending terbaru untuk panel aksi
+        $pendingLoans = Loan::with(['user', 'bookItem.book'])
+            ->where('status', 'pending')
             ->latest()
             ->take(5)
-            ->get()
-            ->map(function($loan) {
-                return [
-                    'user_name' => $loan->user->name,
-                    'book_title' => $loan->bookItem->book->judul,
-                    'type' => $loan->status === 'dikembalikan' ? 'Pengembalian' : 'Peminjaman',
-                    'status' => $loan->status,
-                    'date' => $loan->updated_at->format('d/m/Y'),
-                ];
-            });
+            ->get();
 
         return view('petugas.dashboard', compact(
             'totalPending',
-            'totalApproved',
-            'totalRejected',
-            'totalDamaged',            'pendingCount',            'chartLabels',
+            'activeLoan',
+            'todayReturns',
+            'unpaidDendaCount',
+            'chartLabels',
             'chartData',
-            'recentLoans'
+            'pendingLoans'
         ));
     }
 }

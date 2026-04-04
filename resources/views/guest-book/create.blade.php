@@ -42,7 +42,7 @@
                            name="nama"
                            value="{{ old('nama') }}"
                            placeholder="Masukkan nama lengkap"
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent @error('nama') border-red-500 @enderror"
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-transparent @error('nama') border-red-500 @enderror"
                            required>
                     @error('nama')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -58,7 +58,7 @@
                               name="keperluan"
                               rows="4"
                               placeholder="Contoh: Meminjam buku, Membaca, dll."
-                              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent @error('keperluan') border-red-500 @enderror"
+                              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-transparent @error('keperluan') border-red-500 @enderror"
                               required>{{ old('keperluan') }}</textarea>
                     @error('keperluan')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -67,7 +67,7 @@
 
                 <!-- Submit Button -->
                 <div>
-                    <button type="submit" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors duration-200 inline-flex items-center space-x-2">
+                    <button type="submit" class="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors duration-200 inline-flex items-center space-x-2">
                         <i class="fas fa-paper-plane"></i>
                         <span>Kirim</span>
                     </button>

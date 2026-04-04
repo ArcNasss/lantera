@@ -4,40 +4,55 @@
 @section('page-title', 'Pengembalian Buku')
 
 @section('content')
-    <!-- Flash Messages -->
+
     @if(session('success'))
-        <x-flash-message type="success" />
+        <div class="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-check-circle text-green-500"></i>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-times-circle text-red-500"></i>
+            <span>{{ session('error') }}</span>
+        </div>
     @endif
 
-    @if(session('error'))
-        <x-flash-message type="error" message="{{ session('error') }}" />
-    @endif
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-5">
+        <h3 class="text-2xl font-bold text-gray-900">Pengembalian Buku</h3>
+    </div>
 
     <div class="max-w-4xl mx-auto">
         <!-- Search Card -->
-        <div class="bg-white rounded-lg shadow mb-6">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900">Cari ID Peminjaman</h3>
-                <p class="text-sm text-gray-600 mt-1">Masukkan ID peminjaman untuk memproses pengembalian</p>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-base font-semibold text-gray-900">Cari Peminjaman</h3>
+                <p class="text-sm text-gray-500 mt-0.5">Cari berdasarkan nama, nomor identitas, atau kode buku</p>
             </div>
             <div class="p-6">
+                @if($errors->any())
+                    <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
                 <form action="{{ route('pengembalian.search') }}" method="POST">
                     @csrf
-                    <div class="flex gap-4">
-                        <div class="flex-1">
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <i class="fas fa-search text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 text-sm"></i>
                             <input
-                                type="number"
-                                name="loan_id"
-                                value="{{ request('loan_id') ?? (isset($loan) ? $loan->id : '') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                                placeholder="Masukkan ID Peminjaman"
+                                type="text"
+                                name="search"
+                                value="{{ old('search', isset($loan) ? $loan->user->name : '') }}"
+                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+                                placeholder="Nama, NIM/NISN, atau kode buku..."
+                                minlength="2"
                                 required
                             >
                         </div>
-                        <button
-                            type="submit"
-                            class="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors flex items-center gap-2"
-                        >
+                        <button type="submit"
+                            class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-full text-sm font-medium flex items-center gap-2 transition-colors">
                             <i class="fas fa-search"></i>
                             <span>Cari</span>
                         </button>
@@ -46,9 +61,65 @@
             </div>
         </div>
 
+        @if(isset($loans) && $loans->count() > 1)
+        <!-- Multiple Results -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-base font-semibold text-gray-900">Pilih Peminjaman</h3>
+                <p class="text-sm text-gray-500 mt-0.5">Ditemukan {{ $loans->count() }} peminjaman aktif. Pilih yang ingin diproses.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-cyan-500 text-white text-sm">
+                            <th class="px-5 py-3 text-left font-semibold">Judul Buku</th>
+                            <th class="px-5 py-3 text-left font-semibold">Peminjam</th>
+                            <th class="px-5 py-3 text-center font-semibold">Tgl Pinjam</th>
+                            <th class="px-5 py-3 text-center font-semibold">Tgl Kembali</th>
+                            <th class="px-5 py-3 text-center font-semibold w-20">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($loans as $loanOption)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-5 py-3">
+                                <p class="text-sm font-medium text-gray-900">{{ $loanOption->bookItem->book->judul }}</p>
+                                <p class="text-xs text-gray-400">{{ $loanOption->bookItem->kode_buku }}</p>
+                            </td>
+                            <td class="px-5 py-3">
+                                <p class="text-sm font-medium text-gray-900">{{ $loanOption->user->name }}</p>
+                                <p class="text-xs text-gray-400">{{ $loanOption->user->nomor_identitas }}</p>
+                            </td>
+                            <td class="px-5 py-3 text-center text-sm text-gray-600">
+                                {{ \Carbon\Carbon::parse($loanOption->tanggal_pinjam)->format('d M Y') }}
+                            </td>
+                            <td class="px-5 py-3 text-center">
+                                @php $isLate = \Carbon\Carbon::parse($loanOption->tanggal_kembali)->isPast(); @endphp
+                                <span class="text-sm {{ $isLate ? 'text-red-600 font-semibold' : 'text-gray-600' }}">
+                                    {{ \Carbon\Carbon::parse($loanOption->tanggal_kembali)->format('d M Y') }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 text-center">
+                                <form action="{{ route('pengembalian.search') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="loan_id" value="{{ $loanOption->id }}">
+                                    <button type="submit"
+                                        class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-xs font-medium transition-colors">
+                                        Pilih
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
+
         @if(isset($loan))
         <!-- Detail & Form Pengembalian -->
-        <div class="bg-white rounded-lg shadow">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-6 border-b border-gray-200">
                 <h3 class="text-xl font-bold text-gray-900">Detail Peminjaman</h3>
                 <p class="text-sm text-gray-600 mt-1">Informasi peminjaman yang akan dikembalikan</p>

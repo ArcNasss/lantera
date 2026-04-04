@@ -4,31 +4,81 @@
 @section('page-title', 'Riwayat Peminjaman')
 
 @section('content')
-    <!-- Flash Messages -->
     @if(session('success'))
-        <x-flash-message type="success" />
+        <div class="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-check-circle text-green-500"></i>
+            <span>{{ session('success') }}</span>
+        </div>
     @endif
 
     @if(session('deleted'))
-        <x-flash-message type="deleted" />
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-trash text-red-500"></i>
+            <span>{{ session('deleted') }}</span>
+        </div>
     @endif
 
     @if(session('updated'))
-        <x-flash-message type="updated" />
+        <div class="mb-4 bg-cyan-50 border border-cyan-200 text-cyan-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-pen text-cyan-500"></i>
+            <span>{{ session('updated') }}</span>
+        </div>
     @endif
 
     @if(session('error'))
-        <x-flash-message type="error" message="{{ session('error') }}" />
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-times-circle text-red-500"></i>
+            <span>{{ session('error') }}</span>
+        </div>
     @endif
 
-    <div class="bg-white rounded-lg shadow">
-        <!-- Header -->
-        <div class="p-6 border-b border-gray-200">
-            <div>
-                <h3 class="text-xl font-bold text-gray-900">Riwayat Peminjaman Saya</h3>
-                <p class="text-sm text-gray-600 mt-1">Daftar semua riwayat peminjaman buku Anda</p>
+    <div class="mb-5 flex items-center justify-between">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900">Riwayat Peminjaman Saya</h3>
+            <p class="text-sm text-gray-500 mt-1">Daftar semua riwayat peminjaman buku Anda.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-5 mb-5">
+        <div class="rounded-xl p-5 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #22c4e8 0%, #0ea5c9 100%);">
+            <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20" style="background: rgba(255,255,255,0.5);"></div>
+            <div class="relative z-10 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-white/80 mb-1">Total Riwayat</p>
+                    <p class="text-2xl font-bold">{{ $loans->count() }} <span class="text-base font-normal">data</span></p>
+                </div>
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,255,255,0.25);">
+                    <i class="fas fa-book-open text-xl text-white"></i>
+                </div>
             </div>
         </div>
+        <div class="rounded-xl p-5 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #22c4e8 0%, #0ea5c9 100%);">
+            <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20" style="background: rgba(255,255,255,0.5);"></div>
+            <div class="relative z-10 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-white/80 mb-1">Menunggu</p>
+                    <p class="text-2xl font-bold">{{ $loans->where('status', 'pending')->count() }} <span class="text-base font-normal">data</span></p>
+                </div>
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,255,255,0.25);">
+                    <i class="fas fa-clock text-xl text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="rounded-xl p-5 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #22c4e8 0%, #0ea5c9 100%);">
+            <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20" style="background: rgba(255,255,255,0.5);"></div>
+            <div class="relative z-10 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-white/80 mb-1">Dikembalikan</p>
+                    <p class="text-2xl font-bold">{{ $loans->where('status', 'dikembalikan')->count() }} <span class="text-base font-normal">data</span></p>
+                </div>
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,255,255,0.25);">
+                    <i class="fas fa-check-double text-xl text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
         <!-- Table -->
         <div class="overflow-x-auto">
@@ -110,7 +160,7 @@
                             @endif
                         </td>
                     </tr>
-                    
+
                     <!-- Alasan ditolak jika ada -->
                     @if($loan->status == 'ditolak' && $loan->alasan_ditolak)
                     <tr class="bg-red-50">

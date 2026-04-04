@@ -1,5 +1,38 @@
-<form id="createUserForm" class="space-y-4" action="{{ route('users.store') }}" method="POST">
-    @csrf
+<div x-data="{
+    errors: {},
+    isSubmitting: false,
+
+    submitForm(event) {
+        event.preventDefault();
+        this.errors = {};
+        this.isSubmitting = true;
+
+        const formData = new FormData(event.target);
+
+        fetch('{{ route('users.store') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else if (data.errors) {
+                this.errors = data.errors;
+                this.isSubmitting = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            this.isSubmitting = false;
+        });
+    }
+}">
+<form @submit="submitForm" class="space-y-4">
 
     <!-- Nama -->
     <div>
@@ -11,13 +44,11 @@
             id="name"
             name="name"
             placeholder="Masukkan nama lengkap"
-            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 @error('name') border-red-500 focus:ring-red-500 @else border-gray-300 focus:ring-cyan-500 @enderror"
-            value="{{ old('name') }}"
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:ring-cyan-500"
+            :class="errors.name ? 'border-red-500 focus:ring-red-500' : ''"
             required
         >
-        @error('name')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
+        <p x-show="errors.name" x-text="errors.name ? errors.name[0] : ''" class="mt-1 text-sm text-red-600"></p>
     </div>
 
     <!-- Nomor Identitas -->
@@ -30,13 +61,11 @@
             id="nomor_identitas"
             name="nomor_identitas"
             placeholder="Masukkan nomor identitas"
-            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 @error('nomor_identitas') border-red-500 focus:ring-red-500 @else border-gray-300 focus:ring-cyan-500 @enderror"
-            value="{{ old('nomor_identitas') }}"
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:ring-cyan-500"
+            :class="errors.nomor_identitas ? 'border-red-500 focus:ring-red-500' : ''"
             required
         >
-        @error('nomor_identitas')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
+        <p x-show="errors.nomor_identitas" x-text="errors.nomor_identitas ? errors.nomor_identitas[0] : ''" class="mt-1 text-sm text-red-600"></p>
     </div>
 
     <!-- Role & Password in 2 columns -->
@@ -49,17 +78,16 @@
             <select
                 id="role"
                 name="role"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 @error('role') border-red-500 focus:ring-red-500 @else border-gray-300 focus:ring-cyan-500 @enderror"
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:ring-cyan-500"
+                :class="errors.role ? 'border-red-500 focus:ring-red-500' : ''"
                 required
             >
                 <option value="">Pilih Role</option>
-                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }}>Petugas</option>
-                <option value="peminjam" {{ old('role') == 'peminjam' ? 'selected' : '' }}>Peminjam</option>
+                <option value="admin">Admin</option>
+                <option value="petugas">Petugas</option>
+                <option value="peminjam">Peminjam</option>
             </select>
-            @error('role')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-            @enderror
+            <p x-show="errors.role" x-text="errors.role ? errors.role[0] : ''" class="mt-1 text-sm text-red-600"></p>
         </div>
 
         <!-- Password -->
@@ -72,12 +100,11 @@
                 id="password"
                 name="password"
                 placeholder="••••••••"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 @error('password') border-red-500 focus:ring-red-500 @else border-gray-300 focus:ring-cyan-500 @enderror"
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:ring-cyan-500"
+                :class="errors.password ? 'border-red-500 focus:ring-red-500' : ''"
                 required
             >
-            @error('password')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-            @enderror
+            <p x-show="errors.password" x-text="errors.password ? errors.password[0] : ''" class="mt-1 text-sm text-red-600"></p>
         </div>
     </div>
 
@@ -85,9 +112,12 @@
     <div class="flex justify-end pt-4">
         <button
             type="submit"
-            class="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors font-medium"
+            :disabled="isSubmitting"
+            class="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-            Simpan
+            <span x-show="!isSubmitting">Simpan</span>
+            <span x-show="isSubmitting">Menyimpan...</span>
         </button>
     </div>
 </form>
+</div>

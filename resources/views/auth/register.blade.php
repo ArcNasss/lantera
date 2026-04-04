@@ -11,16 +11,16 @@
         <div class="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
             <div class="max-w-md w-full space-y-8">
                 <!-- Logo -->
-                <div>
-                    <h1 class="text-4xl font-bold text-cyan-500">lantera</h1>
-                </div>
+                {{-- <div>
+                    <h1 class="text-4xl font-bold text-cyan-500">Lantera</h1>
+                </div> --}}
 
                 <!-- Register Form -->
-                <div class="mt-8">
+                <div class="mt-0">
                     <h2 class="text-3xl font-bold text-gray-900 mb-2">Register</h2>
                     <p class="text-gray-600 text-sm mb-6">Buat akun baru</p>
 
-                    <form class="space-y-6" action="{{ route('register') }}" method="POST">
+                    <form class="space-y-3" action="{{ route('register') }}" method="POST">
                         @csrf
 
                         <div>
@@ -85,14 +85,19 @@
                             <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
                                 Konfirmasi Kata Sandi<span class="text-red-500">*</span>
                             </label>
-                            <input
-                                id="password_confirmation"
-                                name="password_confirmation"
-                                type="password"
-                                required
-                                class="appearance-none block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                                placeholder="Ulangi kata sandi"
-                            >
+                            <div class="relative">
+                                <input
+                                    id="password_confirmation"
+                                    name="password_confirmation"
+                                    type="password"
+                                    required
+                                    class="appearance-none block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                                    placeholder="Ulangi kata sandi"
+                                >
+                                <button type="button" onclick="toggleConfirmPassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i id="confirmEyeIcon" class="fas fa-eye h-5 w-5 text-gray-400"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div>
@@ -124,7 +129,18 @@
                 <p class="text-lg text-cyan-50 mb-8">
                     Solusi pintar untuk komunikasi dan administrasi Perpustakaan.
                 </p>
-                <img src="{{ asset('image/authImage.png')}}" alt="" class="w-sm m-auto">
+
+                <div class="rounded-2xl ">
+                    <div class="mx-auto flex items-center justify-center">
+                        <img src="{{ asset('image/smpn1balen.png') }}" alt="Logo SMPN 1 Balen" class="h-44 w-52 object-contain">
+                    </div>
+                    <p class="mt-6 text-center text-lg font-semibold text-white">
+                        SMPN 1 Balen
+                    </p>
+                    <p class="mt-2 text-center text-sm font-medium text-cyan-50">
+                        Platform Perpustakaan Digital
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -133,6 +149,20 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eyeIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        function toggleConfirmPassword() {
+            const passwordInput = document.getElementById('password_confirmation');
+            const eyeIcon = document.getElementById('confirmEyeIcon');
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 eyeIcon.classList.remove('fa-eye');

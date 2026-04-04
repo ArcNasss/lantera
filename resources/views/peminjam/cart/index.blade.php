@@ -1,42 +1,84 @@
 @extends('layouts.peminjam')
 
 @section('title', 'Keranjang Saya')
+@section('page-title', 'Keranjang Peminjaman')
 
 @section('content')
-    <!-- Flash Messages -->
     @if(session('success'))
-        <x-flash-message type="success" />
+        <div class="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-check-circle text-green-500"></i>
+            <span>{{ session('success') }}</span>
+        </div>
     @endif
 
     @if(session('error'))
-        <x-flash-message type="error" message="{{ session('error') }}" />
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-times-circle text-red-500"></i>
+            <span>{{ session('error') }}</span>
+        </div>
     @endif
 
     @if(session('deleted'))
-        <x-flash-message type="deleted" />
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm">
+            <i class="fas fa-trash text-red-500"></i>
+            <span>{{ session('deleted') }}</span>
+        </div>
     @endif
 
+    <div class="mb-5 flex items-center justify-between">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900">Keranjang Peminjaman</h3>
+        </div>
+        <a href="{{ route('peminjam.list-buku') }}" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-plus mr-1"></i>
+            Tambah Buku
+        </a>
+    </div>
 
-    <div class="max-w-6xl mx-auto">
-        <!-- Header -->
-        <div class="mb-6">
-            <div class="flex items-center justify-between">
+    <div class="grid grid-cols-3 gap-5 mb-5">
+        <div class="rounded-xl p-5 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #22c4e8 0%, #0ea5c9 100%);">
+            <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20" style="background: rgba(255,255,255,0.5);"></div>
+            <div class="relative z-10 flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">
-                        Keranjang Peminjaman
-                    </h1>
-                    <p class="text-sm text-gray-600 mt-1">Daftar buku didalam keranjang Anda</p>
+                    <p class="text-sm font-medium text-white/80 mb-1">Total Judul</p>
+                    <p class="text-2xl font-bold">{{ $carts->count() }} <span class="text-base font-normal">buku</span></p>
                 </div>
-                {{-- <a href="{{ route('peminjam.list-buku') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Kembali ke Katalog
-                </a> --}}
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,255,255,0.25);">
+                    <i class="fas fa-book text-xl text-white"></i>
+                </div>
             </div>
         </div>
+        <div class="rounded-xl p-5 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #22c4e8 0%, #0ea5c9 100%);">
+            <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20" style="background: rgba(255,255,255,0.5);"></div>
+            <div class="relative z-10 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-white/80 mb-1">Total Item</p>
+                    <p class="text-2xl font-bold">{{ $carts->sum('quantity') }} <span class="text-base font-normal">item</span></p>
+                </div>
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,255,255,0.25);">
+                    <i class="fas fa-shopping-cart text-xl text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="rounded-xl p-5 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #22c4e8 0%, #0ea5c9 100%);">
+            <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20" style="background: rgba(255,255,255,0.5);"></div>
+            <div class="relative z-10 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-white/80 mb-1">Siap Diajukan</p>
+                    <p class="text-2xl font-bold">{{ $carts->isEmpty() ? 0 : 1 }} <span class="text-base font-normal">pengajuan</span></p>
+                </div>
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,255,255,0.25);">
+                    <i class="fas fa-paper-plane text-xl text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
 
         @if($carts->isEmpty())
             <!-- Empty State -->
-            <div class="bg-white rounded-lg shadow p-12 text-center">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
                 <div class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-4">
                     <i class="fas fa-shopping-cart text-gray-400 text-5xl"></i>
                 </div>
@@ -49,11 +91,11 @@
             </div>
         @else
             <!-- Cart Table -->
-            <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table class="w-full">
                     <thead class="bg-cyan-500 text-white">
                         <tr>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Buku</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold">Buku</th>
                             <th class="px-6 py-4 text-left text-sm font-semibold">Detail</th>
                             <th class="px-6 py-4 text-center text-sm font-semibold">Stok</th>
                             <th class="px-6 py-4 text-center text-sm font-semibold">Jumlah</th>
@@ -74,10 +116,6 @@
                                 <td class="px-6 py-4">
                                     <div class="space-y-1">
                                         <h3 class="font-semibold text-gray-900">{{ $cart->book->judul }}</h3>
-                                        <p class="text-sm text-gray-600">
-                                            <i class="fas fa-feather-pointed text-gray-400 mr-1"></i>
-                                            {{ $cart->book->penulis }}
-                                        </p>
                                         {{-- <p class="text-sm text-gray-600">
                                             <i class="fas fa-building text-gray-400 mr-1"></i>
                                             {{ $cart->book->penerbit }}
@@ -137,8 +175,7 @@
                                         @method('DELETE')
                                         <button type="submit"
                                                 class="inline-flex items-center px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors">
-                                            <i class="fas fa-trash text-sm mr-1"></i>
-                                            Hapus
+                                            <i class="fas fa-trash text-sm "></i>
                                         </button>
                                     </form>
                                 </td>
@@ -150,13 +187,13 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center justify-end space-x-3 mt-4">
-                <a href="{{ route('peminjam.list-buku') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm">
+                <a href="{{ route('peminjam.list-buku') }}" class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors text-sm font-medium">
                     <i class="fas fa-plus mr-1"></i>
                     Tambah Buku
                 </a>
                 <form action="{{ route('loans.store') }}" method="POST" class="inline">
                     @csrf
-                    <button type="submit" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors text-sm">
+                    <button type="submit" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors text-sm font-medium">
                         <i class="fas fa-paper-plane mr-1"></i>
                         Ajukan Peminjaman
                     </button>

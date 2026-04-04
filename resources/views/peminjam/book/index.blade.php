@@ -17,10 +17,15 @@
         selectedBook: {}
     }">
     <!-- Hero Section -->
-    <div class="bg-linear-to-r from-cyan-500 to-cyan-600 rounded-xl p-5 mb-6 text-white">
-        <div class="max-w-4xl">
+    <div class="bg-linear-to-r from-cyan-500 to-cyan-600 rounded-xl p-5 mb-6 text-white relative overflow-hidden">
+        <!-- Subtle Lantera Logo in Top Right -->
+        <div class="absolute top-3 right-4 opacity-20">
+            <img src="{{ asset('image/logoTrans.png') }}" alt="Lantera" class="h-20 w-auto object-contain">
+        </div>
+
+        <div class="max-w-4xl relative z-10">
             <h1 class="text-2xl font-bold mb-2">Temukan Buku Favoritmu</h1>
-            <p class="text-white/90 text-sm mb-4">Jelajahi ribuan koleksi buku dari berbagai kategori. Baca, pinjam, dan kembangkan wawasanmu!</p>
+            <p class="text-white/90 text-sm mb-4">Jelajahi koleksi buku dari berbagai kategori. Pinjam, baca dan kembangkan wawasanmu!</p>
 
             <!-- Search Bar & Filter -->
             <form method="GET" action="{{ route('peminjam.list-buku') }}" class="flex gap-2">
@@ -29,15 +34,15 @@
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
-                        placeholder="Cari judul buku, kode buku, atau penulis..."
-                        class="w-full pl-9 pr-3 py-2 rounded-lg bg-white text-gray-900 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-300 shadow"
+                        placeholder="Cari judul buku, atau penulis..."
+                        class="w-full pl-9 pr-3 py-2 rounded-lg bg-white text-gray-900 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-100 shadow"
                     >
                     <i class="fas fa-search text-gray-400 absolute left-3 top-2.5 text-sm"></i>
                 </div>
 
                 <select
                     name="category_id"
-                    class="px-3 py-2 bg-white text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-cyan-300 shadow"
+                    class="px-3 py-2 bg-white text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-cyan-100 shadow"
                 >
                     <option value="">Semua Kategori</option>
                     @foreach($categories as $category)
@@ -103,7 +108,7 @@
                                     kategori: '{{ $book->category->nama_kategori }}',
                                     stok: {{ $book->availableItems()->count() }},
                                     id: {{ $book->id }},
-                                    synopsis: '{{ addslashes($book->synopsis ?? 'Tidak ada sinopsis untuk buku ini.') }}'
+                                    synopsis: '{{ addslashes($book->synopsis ?? '-') }}'
                                 }; showDetail = true"
                                 class="bg-white hover:bg-cyan-500 text-gray-900 hover:text-white font-medium py-1.5 px-3 rounded-lg transition-colors duration-200 flex items-center space-x-1.5">
                                 <i class="fas fa-eye text-xs"></i>
@@ -125,7 +130,7 @@
                         </h3>
 
                         <!-- Footer -->
-                        <div class="flex items-center justify-between pt-1.5 border-t border-gray-100">
+                        <div class="flex items-center justify-between  border-t border-gray-100">
                             <div class="flex items-center text-[10px] text-gray-500">
                                 <i class="fas fa-box mr-0.5 text-[9px]"></i>
                                 {{ $book->availableItems()->count() }} Stok

@@ -6,6 +6,7 @@
     <title>@yield('title', 'Dashboard') - Lantera Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="icon" href="{{ asset('image/logoRounded.png') }}" type="image/png">
     <style>
         [x-cloak] { display: none !important; }
     </style>
@@ -13,27 +14,43 @@
 <body class="bg-gray-50" x-data="{ sidebarOpen: true }" x-cloak>
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'w-64' : 'w-20'" class="bg-white border-r border-gray-200 flex flex-col transition-all duration-300">
+        <aside :class="sidebarOpen ? 'w-64' : 'w-20'" class="bg-white  flex flex-col transition-all duration-300">
             <!-- Logo -->
-            <div class="h-20 border-b border-gray-200 flex items-center px-6">
-                <div class="flex items-center gap-3 w-full"
-                    :class="sidebarOpen ? 'justify-start' : 'justify-center'">
+            <div class="h-20  flex items-center px-6">
+            <div class="flex items-center gap-3 w-full"
+                :class="sidebarOpen ? 'justify-start' : 'justify-center'">
 
-                    <img
-                        src="{{ asset('image/logoLantera.png') }}"
-                        alt="Lantera Logo"
-                        class="h-10 object-contain"
-                    >
+                <img
+                    x-show="sidebarOpen"
+                    x-transition
+                    src="{{ asset('image/smpn1balen.png') }}"
+                    alt="Logo SMPN 1 Balen"
+                    class="h-8 w-auto object-contain"
+                >
 
-                    <span
-                        x-show="sidebarOpen"
-                        x-transition
-                        class="text-2xl font-bold text-cyan-500 whitespace-nowrap"
-                    >
-                        lantera
-                    </span>
+                <div
+                    x-show="sidebarOpen"
+                    x-transition
+                    class="border-l border-gray-300 h-8"
+                ></div>
+
+                <img
+                    src="{{ asset('image/logoLantera.png') }}"
+                    alt="Lantera Logo"
+                    class="h-8 w-auto object-contain"
+                >
+
+
+                <div x-show="sidebarOpen" x-transition class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl font-bold text-cyan-500 leading-none whitespace-nowrap">Lantera</span>
+                    </div>
+                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 leading-none">
+                        SMPN 1 Balen
+                    </p>
                 </div>
             </div>
+        </div>
 
             <!-- Menu Navigation -->
             <nav class="flex-1 overflow-y-auto p-4 space-y-1">
@@ -54,8 +71,8 @@
                     </button>
                     <div x-show="open && sidebarOpen" x-collapse class="ml-8 mt-2 space-y-2">
                         <a href="{{ route('users.index') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('users.*') ? 'text-cyan-600 font-semibold' : 'text-gray-600 hover:text-cyan-600' }}">Kelola User</a>
-                        <a href="{{ route('books.index') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('books.*') ? 'text-cyan-600 font-semibold' : 'text-gray-600 hover:text-cyan-600' }}">Kelola Buku</a>
                         <a href="{{ route('categories.index') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('categories.*') ? 'text-cyan-600 font-semibold' : 'text-gray-600 hover:text-cyan-600' }}">Kategori Buku</a>
+                        <a href="{{ route('books.index') }}" class="block px-4 py-2 text-sm {{ request()->routeIs('books.*') ? 'text-cyan-600 font-semibold' : 'text-gray-600 hover:text-cyan-600' }}">Kelola Buku</a>
                     </div>
                 </div>
 
@@ -88,11 +105,11 @@
                     <span x-show="sidebarOpen" class="font-medium">Buku Tamu</span>
                 </a>
 
-                <!-- Laporan -->
+                {{-- <!-- Laporan -->
                 <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg">
                     <i class="fas fa-chart-line w-5 h-5 shrink-0 flex items-center justify-center"></i>
                     <span x-show="sidebarOpen" class="font-medium">Laporan</span>
-                </a>
+                </a> --}}
 
                 <!-- Pengaturan -->
                 <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg">
@@ -105,7 +122,7 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Top Navbar -->
-            <header class="bg-white border-b border-gray-200 h-20 flex items-center px-6">
+            <header class="bg-white border-b-2 border-gray-100 h-20 flex items-center px-6">
                 <div class="flex items-center justify-between w-full">
                     <div class="flex items-center space-x-4">
                         <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 hover:text-gray-700">
@@ -155,5 +172,6 @@
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @stack('scripts')
 </body>
 </html>
