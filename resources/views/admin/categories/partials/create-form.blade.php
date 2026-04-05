@@ -20,7 +20,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                window.location.reload();
+                window.location.href = '{{ route('categories.index') }}?created=1';
             } else if (data.errors) {
                 this.errors = data.errors;
                 this.isSubmitting = false;

@@ -7,13 +7,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('image/logoRounded.png') }}" type="image/png">
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
-<body class="bg-gray-50" x-data="{ sidebarOpen: true }" x-cloak>
+<body class="bg-gray-50" x-data="{ sidebarOpen: window.innerWidth >= 1024 }" x-cloak>
     <div class="flex h-screen overflow-hidden">
+        <div
+            x-show="sidebarOpen"
+            x-transition.opacity
+            class="fixed inset-0 z-30 bg-black/40 lg:hidden"
+            @click="sidebarOpen = false"
+        ></div>
         <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'w-59' : 'w-20'" class="bg-white  flex flex-col transition-all duration-300">
+        <aside
+            :class="sidebarOpen ? 'translate-x-0 lg:w-59' : '-translate-x-full lg:translate-x-0 lg:w-20'"
+            class="fixed inset-y-0 left-0 z-40 w-59 bg-white flex flex-col transition-all duration-300 lg:static lg:shadow-none shadow-xl"
+        >
         <!-- Logo -->
-        <div class="h-20  flex items-center px-6">
+        <div class="h-20 flex items-center px-6">
             <div class="flex items-center gap-3 w-full"
                 :class="sidebarOpen ? 'justify-start' : 'justify-center'">
 
@@ -93,23 +105,23 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden lg:ml-0" :class="sidebarOpen ? 'ml-0 lg:ml-0' : 'ml-0'">
             <!-- Top Navbar -->
-           <header class="bg-white border-b-2 border-gray-100 h-20 flex items-center px-6">
+           <header class="bg-white border-b-2 border-gray-100 h-20 flex items-center px-4 sm:px-6">
                 <div class="flex items-center justify-between w-full">
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3 sm:space-x-4">
                         <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 hover:text-gray-700">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
-                        <h2 class="text-2xl font-semibold text-gray-800">
+                        <h2 class="text-lg sm:text-2xl font-semibold text-gray-800">
                             @yield('Dashboard')
                         </h2>
                     </div>
 
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 sm:space-x-4">
                         @auth
                             <div class="relative" x-data="{ open: false }">
-                                <button @click="open = !open" class="flex items-center space-x-3 focus:outline-none">
+                                <button @click="open = !open" class="flex items-center space-x-2 sm:space-x-3 focus:outline-none">
                                     <div class="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
                                         {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                                     </div>
@@ -125,12 +137,10 @@
                                     x-transition
                                     class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
 
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Settings</a>
-                                    <hr class="my-2">
                                     <a href="{{ route('peminjam.kartu-anggota') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-cyan-600">
                                         Unduh Kartu Anggota
                                     </a>
+                                    <hr class="my-2">
                                     <form action="{{ route('logout') }}" method="POST">
                                         @csrf
                                         <button type="submit"

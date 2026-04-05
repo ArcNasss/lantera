@@ -11,12 +11,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReturnBookController extends Controller
 {
-    // Riwayat pengembalian untuk Petugas
     public function index(Request $request)
     {
         $query = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas']);
 
-        // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -33,7 +31,6 @@ class ReturnBookController extends Controller
             });
         }
 
-        // Kondisi filter
         if ($request->has('kondisi') && $request->kondisi) {
             $query->where('kondisi', $request->kondisi);
         }
@@ -47,12 +44,10 @@ class ReturnBookController extends Controller
         return view('petugas.peminjaman.riwayat', compact('returns', 'totalPengembalian', 'totalBermasalah', 'totalDendaSum'));
     }
 
-    // Riwayat pengembalian untuk Admin (View Only)
     public function adminIndex(Request $request)
     {
         $query = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas']);
 
-        // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -69,7 +64,6 @@ class ReturnBookController extends Controller
             });
         }
 
-        // Kondisi filter
         if ($request->has('kondisi') && $request->kondisi) {
             $query->where('kondisi', $request->kondisi);
         }
@@ -90,7 +84,6 @@ class ReturnBookController extends Controller
 
     public function search(Request $request)
     {
-        // Direct selection from multi-result list
         if ($request->filled('loan_id')) {
             $loan = Loan::with(['user', 'bookItem.book.category'])
                 ->where('status', 'disetujui')
@@ -145,7 +138,6 @@ class ReturnBookController extends Controller
 
             $loan = Loan::findOrFail($request->loan_id);
 
-            // Calculate denda otomatis
             $dendaKeterlambatan = 0;
             $tanggalKembali = \Carbon\Carbon::parse($loan->tanggal_kembali)->startOfDay();
             $sekarang = \Carbon\Carbon::now()->startOfDay();
@@ -155,7 +147,6 @@ class ReturnBookController extends Controller
                 $dendaKeterlambatan = $daysLate * 2000;
             }
 
-            // Denda kondisi buku
             $dendaKondisi = 0;
             if ($request->kondisi === 'rusak' || $request->kondisi === 'hilang') {
                 $dendaKondisi = 100000;
@@ -163,7 +154,6 @@ class ReturnBookController extends Controller
 
             $totalDenda = $dendaKeterlambatan + $dendaKondisi;
 
-            // Create return book record
             ReturnBook::create([
                 'loan_id' => $loan->id,
                 'tanggal_pengembalian' => now(),
@@ -171,15 +161,11 @@ class ReturnBookController extends Controller
                 'denda' => $totalDenda,
             ]);
 
-            // Update loan status and tanggal_kembali
             $loan->update([
                 'status' => 'dikembalikan',
                 'tanggal_kembali' => now(),
             ]);
 
-            // Update book item status
-            // Jika hilang, status tetap borrowed
-            // Jika baik/rusak, status kembali available
             if ($request->kondisi !== 'hilang') {
                 $loan->bookItem->update(['status' => 'available']);
             }
@@ -203,7 +189,6 @@ class ReturnBookController extends Controller
         $return = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas'])
             ->findOrFail($id);
 
-        // Hitung detail denda
         $tanggalKembali = \Carbon\Carbon::parse($return->loan->tanggal_kembali)->startOfDay();
         $tanggalPengembalian = \Carbon\Carbon::parse($return->tanggal_pengembalian)->startOfDay();
         $daysLate = 0;
@@ -214,7 +199,6 @@ class ReturnBookController extends Controller
             $dendaKeterlambatan = $daysLate * 2000;
         }
 
-        // Denda kondisi
         $dendaKondisi = 0;
         $kondisiLabel = 'Baik';
 
@@ -275,7 +259,6 @@ class ReturnBookController extends Controller
         $query = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas'])
             ->where('denda', '>', 0);
 
-        // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -292,14 +275,12 @@ class ReturnBookController extends Controller
             });
         }
 
-        // Filter berdasarkan status
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
         $denda = $query->latest()->paginate(10)->withQueryString();
 
-        // Hitung statistik
         $totalDenda = ReturnBook::where('denda', '>', 0)->sum('denda');
         $totalPending = ReturnBook::where('denda', '>', 0)->where('status', 'pending')->sum('denda');
         $totalPaid = ReturnBook::where('denda', '>', 0)->where('status', 'paid')->sum('denda');
@@ -320,13 +301,11 @@ class ReturnBookController extends Controller
         return redirect()->back()->with('success', 'Denda berhasil ditandai sebagai lunas');
     }
 
-    // Admin Denda View (Read Only)
     public function adminDendaIndex(Request $request)
     {
         $query = ReturnBook::with(['loan.user', 'loan.bookItem.book.category', 'loan.petugas'])
             ->where('denda', '>', 0);
 
-        // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -343,7 +322,6 @@ class ReturnBookController extends Controller
             });
         }
 
-        // Status filter
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
@@ -357,7 +335,6 @@ class ReturnBookController extends Controller
         return view('admin.denda.index', compact('denda', 'totalDenda', 'totalPending', 'totalPaid'));
     }
 
-    // Export Denda to Excel
     public function exportDenda(Request $request)
     {
         $startDate = $request->input('start_date');

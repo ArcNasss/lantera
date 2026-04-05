@@ -9,6 +9,7 @@ use App\Models\Cart;
 use App\Models\BookItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -202,9 +203,16 @@ class LoanController extends Controller
 
     public function reject(Request $request, $id)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'alasan_ditolak' => 'required|string|max:255',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('reject_loan_id', $id);
+        }
 
         $loan = Loan::findOrFail($id);
 

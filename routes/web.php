@@ -122,5 +122,5 @@ Route::middleware(['auth', 'role:admin,peminjam,petugas'])->group(function () {
 
 
 Route::get('/test', function() {
-    return view('petugas.pdf.invoice');
+    return view('tes');
 });

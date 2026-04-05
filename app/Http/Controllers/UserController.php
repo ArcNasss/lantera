@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of users
-     */
     public function index(Request $request)
     {
         $query = User::where('role', '!=', 'admin');
@@ -33,9 +30,6 @@ class UserController extends Controller
     }
 
 
-    /**
-     * Store a newly created user
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -62,9 +56,6 @@ class UserController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /**
-     * Update the specified user
-     */
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
@@ -87,9 +78,6 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('updated', true);
     }
 
-    /**
-     * Remove the specified user
-     */
     public function destroy(User $user)
     {
         $user->delete();

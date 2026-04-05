@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-5 mb-5">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-5">
         <div class="rounded-xl p-5 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #22c4e8 0%, #0ea5c9 100%);">
             <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20" style="background: rgba(255,255,255,0.5);"></div>
             <div class="relative z-10 flex items-center justify-between">
@@ -82,7 +82,7 @@
 
         <!-- Table -->
         <div class="overflow-x-auto">
-            <table class="w-full">
+            <table class="w-full min-w-[980px]">
                 <thead>
                     <tr class="bg-cyan-500 text-white">
                         <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-16">No</th>
@@ -115,7 +115,7 @@
                             <div class="text-xs text-gray-500 mt-1">Kode: {{ $loan->bookItem->kode_buku }}</div>
                         </td>
                         <td class="px-4 py-4">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap">
                                 {{ $loan->bookItem->book->category->nama_kategori }}
                             </span>
                         </td>

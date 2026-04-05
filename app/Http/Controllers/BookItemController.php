@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\DB;
 
 class BookItemController extends Controller
 {
-    /**
-     * Store a new book item
-     */
     public function store(Request $request)
     {
         try {
@@ -115,9 +112,6 @@ class BookItemController extends Controller
         }
     }
 
-    /**
-     * Update book item
-     */
     public function update(Request $request, BookItem $bookItem)
     {
         $validated = $request->validate([
@@ -133,12 +127,8 @@ class BookItemController extends Controller
         ]);
     }
 
-    /**
-     * Delete book item
-     */
     public function destroy(BookItem $bookItem)
     {
-        // Check if item is currently borrowed
         if ($bookItem->status === 'borrowed') {
             return response()->json([
                 'success' => false,

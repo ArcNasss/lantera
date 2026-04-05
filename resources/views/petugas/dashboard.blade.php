@@ -10,8 +10,20 @@
         <h3 class="text-2xl font-bold text-gray-900">Dashboard</h3>
     </div>
 
+    @if($totalPending > 0)
+    <div class="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-3 text-sm font-medium">
+            <i class="fas fa-bell text-amber-500 text-base"></i>
+            <span>Ada {{ $totalPending }} pengajuan peminjaman yang menunggu persetujuan.</span>
+        </div>
+        <a href="{{ route('peminjaman.index') }}?status=pending" class="inline-flex items-center justify-center rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 transition-colors">
+            Proses sekarang
+        </a>
+    </div>
+    @endif
+
     <!-- Stat Cards -->
-    <div class="grid grid-cols-1 gap-5 mb-6 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid grid-cols-1 gap-5 mb-6 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Menunggu Persetujuan -->
         <div class="relative overflow-hidden px-7 py-5 text-white shadow-sm" style="border-radius: 22px; min-height: 96px; background: linear-gradient(90deg, #1fa5d5 0%, #25b3e1 58%, #58c5ed 100%);">
             <div class="absolute rounded-full" style="right: -56px; top: -60px; width: 216px; height: 216px; background: rgba(176, 235, 251, 0.24);"></div>

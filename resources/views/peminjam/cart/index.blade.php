@@ -35,7 +35,7 @@
         </a>
     </div>
 
-    <div class="grid grid-cols-3 gap-5 mb-5">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-5">
         <div class="rounded-xl p-5 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #22c4e8 0%, #0ea5c9 100%);">
             <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20" style="background: rgba(255,255,255,0.5);"></div>
             <div class="relative z-10 flex items-center justify-between">
@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    <div>
+    <div class="space-y-4">
 
         @if($carts->isEmpty())
             <!-- Empty State -->
@@ -92,7 +92,8 @@
         @else
             <!-- Cart Table -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table class="w-full">
+                <div class="overflow-x-auto">
+                <table class="w-full min-w-[820px]">
                     <thead class="bg-cyan-500 text-white">
                         <tr>
                             <th class="px-6 py-4 text-center text-sm font-semibold">Buku</th>
@@ -183,10 +184,11 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex items-center justify-end space-x-3 mt-4">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 mt-4">
                 <a href="{{ route('peminjam.list-buku') }}" class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors text-sm font-medium">
                     <i class="fas fa-plus mr-1"></i>
                     Tambah Buku

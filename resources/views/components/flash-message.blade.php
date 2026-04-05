@@ -3,22 +3,22 @@
 @php
     $config = [
         'success' => [
-            'icon' => '<svg class="w-20 h-20" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="45" fill="#E0F2FE"/><path d="M70 35L42 63L30 51" stroke="#0EA5E9" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="25" r="8" fill="#0EA5E9"/><path d="M50 35V45" stroke="#0EA5E9" stroke-width="4" stroke-linecap="round"/></svg>',
+            'icon' => '<div class="w-20 h-20 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center"><i class="fas fa-circle-check text-5xl"></i></div>',
             'title' => 'Data berhasil disimpan!',
             'message' => 'Data Anda telah tersimpan dengan aman'
         ],
         'deleted' => [
-            'icon' => '<svg class="w-20 h-20" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="45" fill="#FEE2E2"/><path d="M35 40L65 40M40 40V70C40 72 42 74 44 74H56C58 74 60 72 60 70V40M45 40V35C45 33 47 31 49 31H51C53 31 55 33 55 35V40" stroke="#DC2626" stroke-width="4" stroke-linecap="round"/><line x1="45" y1="50" x2="45" y2="64" stroke="#DC2626" stroke-width="3" stroke-linecap="round"/><line x1="55" y1="50" x2="55" y2="64" stroke="#DC2626" stroke-width="3" stroke-linecap="round"/></svg>',
+            'icon' => '<div class="w-20 h-20 rounded-full bg-red-100 text-red-500 flex items-center justify-center"><i class="fas fa-trash-can text-4xl"></i></div>',
             'title' => 'Data berhasil dihapus!',
             'message' => 'Data Anda telah dihapus dari sistem'
         ],
         'updated' => [
-            'icon' => '<svg class="w-20 h-20" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="45" fill="#FEF3C7"/><path d="M65 35L40 60L32 52" stroke="#F59E0B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="70" cy="30" r="6" fill="#F59E0B"/><path d="M60 25L55 20" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/></svg>',
+            'icon' => '<div class="w-20 h-20 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center"><i class="fas fa-pen-to-square text-4xl"></i></div>',
             'title' => 'Perubahan Berhasil!',
             'message' => 'Perubahan yang Anda buat telah disimpan dengan sukses'
         ],
         'error' => [
-            'icon' => '<svg class="w-20 h-20" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="45" fill="#FEE2E2"/><path d="M35 35L65 65M65 35L35 65" stroke="#DC2626" stroke-width="6" stroke-linecap="round"/></svg>',
+            'icon' => '<div class="w-20 h-20 rounded-full bg-red-100 text-red-600 flex items-center justify-center"><i class="fas fa-circle-xmark text-5xl"></i></div>',
             'title' => 'Terjadi Kesalahan!',
             'message' => 'Mohon coba lagi atau hubungi administrator'
         ]
@@ -30,6 +30,7 @@
 <div
     x-data="{ show: true }"
     x-show="show"
+    @click.self="show = false"
     x-transition:enter="transition ease-out duration-300"
     x-transition:enter-start="opacity-0 transform scale-90"
     x-transition:enter-end="opacity-100 transform scale-100"

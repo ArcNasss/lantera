@@ -8,25 +8,49 @@
     <div class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" @click="showDetail = false"></div>
 
     <!-- Modal Content -->
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div @click.stop class="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-3 sm:p-4">
+        <div @click.stop class="relative bg-white rounded-2xl shadow-2xl w-full max-w-[calc(100%-0.5rem)] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
             <!-- Close Button -->
             <button @click="showDetail = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
                 <i class="fas fa-times text-2xl"></i>
             </button>
 
-            <div class="flex flex-col md:flex-row gap-6 p-6">
+            <div class="flex flex-col md:flex-row gap-4 sm:gap-6 p-4 sm:p-6">
                 <!-- Book Image -->
                 <div class="md:w-1/3">
-                    <img :src="selectedBook.foto" :alt="selectedBook.judul" class="w-full h-auto rounded-xl shadow-lg object-cover">
+                    <img :src="selectedBook.foto" :alt="selectedBook.judul" class="w-full h-auto rounded-xl shadow-lg object-cover max-h-72 sm:max-h-none">
 
                     <!-- Stock Badge -->
                     <div class="mt-4">
                         <span :class="selectedBook.stok > 0 ? 'bg-green-500' : 'bg-red-500'"
-                              class="inline-block px-4 py-2 text-white text-sm font-bold rounded-lg w-full text-center">
+                            class="inline-block px-4 py-2 text-white text-sm font-bold rounded-lg w-full text-center">
                             <i class="fas fa-box mr-2"></i>
                             <span x-text="selectedBook.stok > 0 ? 'Tersedia (' + selectedBook.stok + ' buku)' : 'Stok Habis'"></span>
                         </span>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="mt-4">
+                        @auth
+                        <form :action="'/cart/' + selectedBook.id" method="POST">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="w-full px-5 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-semibold transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="selectedBook.stok === 0">
+                                <i class="fas fa-shopping-cart mr-2"></i>
+                                Tambah ke Keranjang
+                            </button>
+                        </form>
+                        @else
+                        <button
+                            type="button"
+                            class="w-full px-5 py-3 bg-gray-300 text-gray-500 rounded-lg font-semibold flex items-center justify-center cursor-not-allowed opacity-70"
+                            disabled>
+                            <i class="fas fa-shopping-cart mr-2"></i>
+                            Login
+                        </button>
+                        @endauth
                     </div>
                 </div>
 
@@ -39,7 +63,7 @@
                     </span>
 
                     <!-- Title -->
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2" x-text="selectedBook.judul"></h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2" x-text="selectedBook.judul"></h2>
 
                     <!-- Meta Info -->
                     <div class="space-y-2 mb-4">
@@ -58,11 +82,11 @@
                             <span class="font-medium mr-2">Tahun:</span>
                             <span x-text="selectedBook.tahun"></span>
                         </p>
-                        <p class="text-gray-600 flex items-center">
+                        {{-- <p class="text-gray-600 flex items-center">
                             <i class="fas fa-barcode w-5 mr-2"></i>
                             <span class="font-medium mr-2">Kode Buku:</span>
                             <span x-text="selectedBook.kode"></span>
-                        </p>
+                        </p> --}}
                     </div>
 
                     <!-- Synopsis -->
@@ -71,29 +95,6 @@
                         <p class="text-gray-600 leading-relaxed" x-text="selectedBook.synopsis"></p>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex gap-3 mt-6">
-                        @auth
-                        <form :action="'/cart/' + selectedBook.id" method="POST" class="flex-1">
-                            @csrf
-                            <button
-                                type="submit"
-                                class="w-full px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-semibold transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                                :disabled="selectedBook.stok === 0">
-                                <i class="fas fa-shopping-cart mr-2"></i>
-                                Tambah ke Keranjang
-                            </button>
-                        </form>
-                        @else
-                        <button
-                            type="button"
-                            class="w-full px-6 py-3 bg-gray-300 text-gray-500 rounded-lg font-semibold flex items-center justify-center cursor-not-allowed opacity-70"
-                            disabled>
-                            <i class="fas fa-shopping-cart mr-2"></i>
-                            Login untuk meminjam
-                        </button>
-                        @endauth
-                    </div>
                 </div>
             </div>
         </div>

@@ -40,7 +40,7 @@
             </div>
 
             <div class="flex items-center space-x-2 mt-6">
-                <button type="submit" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                     <i class="fas fa-download mr-2"></i>Download Excel
                 </button>
                 <button type="button" onclick="closeExportModal()" class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors">

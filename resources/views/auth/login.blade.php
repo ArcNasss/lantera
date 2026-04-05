@@ -104,7 +104,7 @@
                         SMPN 1 Balen
                     </p>
                     <p class="mt-2 text-center text-sm font-medium text-cyan-50">
-                        Platform Peminjaman Buku
+                        Platform Peminjaman Buku Perpustakaan
                     </p>
                 </div>
             </div>

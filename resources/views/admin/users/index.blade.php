@@ -4,13 +4,13 @@
 
 @section('content')
     <!-- Flash Messages -->
-    @if(session('success'))
+    @if(session('success') || request()->query('created') == '1')
         <x-flash-message type="success" />
     @endif
     @if(session('deleted'))
         <x-flash-message type="deleted" />
     @endif
-    @if(session('updated'))
+    @if(session('updated') || request()->query('updated') == '1')
         <x-flash-message type="updated" />
     @endif
     @if(session('error'))
