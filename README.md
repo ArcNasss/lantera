@@ -16,6 +16,8 @@
   composer install
   npm install
 ```
+(kemudian lakukan konfigurasi tailwind untuk laravel 12)
+
 ```bash
   cp .env.example .env
 ```
@@ -25,6 +27,7 @@
 
 ```bash
   php artisan serve
+  npm run dev
 ```
 
 
