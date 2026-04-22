@@ -1,5 +1,5 @@
 
-# SISTEM PEMINJAMAN BUKU PERPUSTAKAAN
+# SISTEM PEMINJAMAN BUKU PERPUSTAKAAN (LANTERA)
 
 ## Cara integrasi repository ke laptop masing-masing:
 
@@ -26,4 +26,5 @@
 ```bash
   php artisan serve
 ```
+created with 😝 by Nasril
 
